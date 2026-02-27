@@ -1,1 +1,151 @@
-asdfasdf
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamline Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-bolt"></i>
+                <span>Streamline</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#"><i class="fas fa-tasks"></i> My Tasks</a></li>
+                    <li><a href="#"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="#"><i class="fas fa-calendar-alt"></i> Calendar</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="User Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Guest User</span>
+                        <span class="user-status">Online</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-navbar">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for tasks, notes...">
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon"><i class="far fa-bell"></i></button>
+                    <button class="btn-primary" id="btn-add-task">
+                        <i class="fas fa-plus"></i> New Task
+                    </button>
+                </div>
+            </header>
+
+            <section class="dashboard-overview">
+                <div class="greeting-section">
+                    <h1>안녕하세요, <span id="username-display">사용자</span>님!</h1>
+                    <p>오늘의 계획을 확인하고 생산성을 높여보세요.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-details">
+                            <h3>완료된 작업</h3>
+                            <p class="stat-number" id="completed-count">12</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                        <div class="stat-details">
+                            <h3>진행 중</h3>
+                            <p class="stat-number" id="ongoing-count">5</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-fire"></i></div>
+                        <div class="stat-details">
+                            <h3>목표 달성률</h3>
+                            <p class="stat-number" id="completion-rate">75%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="tasks-section">
+                        <div class="section-header">
+                            <h2>오늘의 작업 리스트</h2>
+                            <button class="btn-text">전체 보기</button>
+                        </div>
+                        <div class="task-list" id="task-list">
+                            <!-- Tasks will be injected here by JS -->
+                        </div>
+                    </div>
+
+                    <div class="activity-section">
+                        <div class="section-header">
+                            <h2>최근 활동</h2>
+                        </div>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-dot"></div>
+                                <div class="activity-content">
+                                    <p><strong>프로젝트 제안서</strong> 검토 완료</p>
+                                    <span>2시간 전</span>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot blue"></div>
+                                <div class="activity-content">
+                                    <p>새로운 디자인 리소스 다운로드</p>
+                                    <span>4시간 전</span>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot orange"></div>
+                                <div class="activity-content">
+                                    <p>주간 팀 회의 참여</p>
+                                    <span>어제</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>새 작업 추가</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="task-input" placeholder="무엇을 해야 하나요?">
+                <select id="task-priority">
+                    <option value="low">낮음</option>
+                    <option value="medium">보통</option>
+                    <option value="high">높음</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-task">취소</button>
+                <button class="btn-primary" id="save-task">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
