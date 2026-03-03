@@ -27,8 +27,28 @@
   </head>
   <body>
     <div id="cesiumContainer"></div>
-    <script>
-      const viewer = new Cesium.Viewer("cesiumContainer");
+    <script type="module">
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString );
+        const mytkn = urlParams.get('mytkn');
+
+        // Cesium.Ion.defaultAccessToken = urlParams;
+        Cesium.Ion.defaultAccessToken = mytkn;
+        const viewer = new Cesium.Viewer("cesiumContainer", { terrain: Cesium.Terrain.fromWorldTerrain(), });
+
+        // Fly the camera to San Francisco at the given longitude, latitude, and height.
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(126.922056,37.389132, 400),
+            orientation: {
+                heading: Cesium.Math.toRadians(0.0),
+                pitch: Cesium.Math.toRadians(-15.0),
+            }
+        });
+
+        // Add Cesium OSM Buildings, a global 3D buildings layer.
+        const buildingTileset = await Cesium.createOsmBuildingsAsync();
+        viewer.scene.primitives.add(buildingTileset);  
+
     </script>
   </body>
 </html>
