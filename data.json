@@ -1,0 +1,10 @@
+{
+    "version": 0.1,
+    "discription": "Voxel and Cube based GIS Research",
+    "Business Structure": [ 
+        { "level": 0, "desc": "1세부" },
+        { "level": 0, "desc": "2세부" },
+        { "level": 0, "desc": "3세부" }
+    ]
+
+}
