@@ -10,7 +10,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
     />
-    <title>Hello World!</title>
+    <title>PLAYGROUND</title>
     <script src="./libs/Cesium-1.138/Build/CesiumUnminified/Cesium.js"></script>
     <style>
       @import url(./libs/Cesium-1.138/Build/CesiumUnminified/Widgets/widgets.css);
@@ -34,7 +34,22 @@
 
         // Cesium.Ion.defaultAccessToken = urlParams;
         Cesium.Ion.defaultAccessToken = mytkn;
-        const viewer = new Cesium.Viewer("cesiumContainer", { terrain: Cesium.Terrain.fromWorldTerrain(), });
+        const viewer = new Cesium.Viewer("cesiumContainer", { 
+          timeline: false,
+          animation: false,
+          // baseLayerPicker: false,
+          // geocoder: false,
+          // homeButton: false,
+          // sceneModePicker: false,
+          // navigationHelpButton: false,
+          // fullscreenButton: false,
+          infoBox: false,
+          selectionIndicator: false,
+          skyBox: false,
+          // skyAtmosphere: false,
+          // globe: false,
+          scene3DOnly: true,
+          terrain: Cesium.Terrain.fromWorldTerrain(), });
 
         // Fly the camera to San Francisco at the given longitude, latitude, and height.
         viewer.camera.flyTo({
