@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+    <title>PLAYGROUND</title>
+    <script src="./libs/Cesium-1.138/Build/CesiumUnminified/Cesium.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url(./libs/Cesium-1.138/Build/CesiumUnminified/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .header {
+            width: 100dvw;
+            /* height: 8dvh; */
+            background-color: #f8f9fa;
+            border: solid 2px #dee2e6;
+        }
+
+        .header-left {
+            justify-content: left;
+            align-items: center;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-inline-start: 1rem;
+            padding-inline-end: 0.5rem;
+            gap: 1rem;
+        }
+
+        .header-center {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .header-right {
+            justify-content: right;
+            align-items: center;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-inline-start: 0.5rem;
+            padding-inline-end: 1rem;
+            gap: 1rem;
+        }
+
+        .main {
+            width: 100dvw;
+            height: 92dvh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header d-flex">
+
+        <!-- left -->
+        <div class="d-flex header-left">
+            <button class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M4 18q-.425 0-.712-.288T3 17t.288-.712T4 16h16q.425 0 .713.288T21 17t-.288.713T20 18zm0-5q-.425 0-.712-.288T3 12t.288-.712T4 11h16q.425 0 .713.288T21 12t-.288.713T20 13zm0-5q-.425 0-.712-.288T3 7t.288-.712T4 6h16q.425 0 .713.288T21 7t-.288.713T20 8z" />
+                </svg>
+            </button>
+            <a class="d-flex">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M6.366 20q-.986 0-1.676-.69T4 17.635V12q0-.47.176-.9t.507-.763l5.634-5.635q.349-.354.79-.528T12 4q.45 0 .88.17q.431.171.783.532l1.02 1.02l-6.933 6.932v3.596h8.5v-3.596L12.689 9.11l2.702-2.696l3.907 3.922q.329.329.516.76T20 12v5.635q0 .985-.695 1.675q-.696.69-1.69.69z" />
+                </svg>
+            </a>
+        </div>
+
+        <!-- center -->
+        <div class="d-flex header-center">
+
+            <span>Dashboard</span>
+
+            <button class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14" />
+                </svg>
+            </button>
+
+        </div>
+
+        <!-- right -->
+        <div class="d-flex header-right">
+            <button class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm0-8.45q.45-.275.963-.413T7 12h10q.525 0 1.038.138t.962.412V5H5zM5 19h14v-3q0-.825-.587-1.412T17 14H7q-.825 0-1.412.588T5 16zm0 0h14z" />
+                </svg>
+            </button>
+            <button class="btn rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M9.175 10.825Q8 9.65 8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12t-2.825-1.175M4 20v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z" />
+                </svg>
+            </button>
+        </div>
+
+    </div>
+    <div class="main">
+        <div id="cesiumContainer"></div>
+        <script type="module">
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const mytkn = urlParams.get('mytkn');
+
+            // Cesium.Ion.defaultAccessToken = urlParams;
+            Cesium.Ion.defaultAccessToken = mytkn;
+            const viewer = new Cesium.Viewer("cesiumContainer", {
+                timeline: false,
+                animation: false,
+                // baseLayerPicker: false,
+                // geocoder: false,
+                // homeButton: false,
+                // sceneModePicker: false,
+                // navigationHelpButton: false,
+                // fullscreenButton: false,
+                infoBox: true,
+                selectionIndicator: false,
+                skyBox: false,
+                // skyAtmosphere: false,
+                // globe: false,
+                scene3DOnly: true,
+                terrain: Cesium.Terrain.fromWorldTerrain(),
+            });
+
+            // Fly the camera to San Francisco at the given longitude, latitude, and height.
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(126.922056, 37.389132, 1200),
+                orientation: {
+                    heading: Cesium.Math.toRadians(-30.0),
+                    pitch: Cesium.Math.toRadians(-80.0),
+                }
+            });
+
+            // Add Cesium OSM Buildings, a global 3D buildings layer.
+            const buildingTileset = await Cesium.createOsmBuildingsAsync();
+
+            viewer.scene.primitives.add(buildingTileset);
+
+            // style 적용
+            // buildingTileset.style = new Cesium.Cesium3DTileStyle({
+            //   color: {
+            //     conditions: [
+            //      ["${building} === 'university'", "color('black')"],
+            //      ["true", "color('white')"]
+            //     ]
+            //   }
+            // })
+
+        </script>
+        <script src="./json_reader.js"></script>
+    </div>
+
+</body>
+
+</html>
