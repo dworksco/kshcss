@@ -26,6 +26,7 @@
             box-sizing: border-box;
         }
 
+        /* 헤더 */
         .header {
             width: 100dvw;
             /* height: 8dvh; */
@@ -65,7 +66,56 @@
         .main {
             width: 100dvw;
             height: 92dvh;
+            display: flex;
         }
+
+        /* 사이드바 */
+        .sidebar {
+            width: 40dvw;
+            height: 100dvh;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline{
+            list-style: none;
+            padding: 0;
+            position: relative;
+        }
+        .timeline::before{
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 5px;
+            bottom: 5px;
+            width: 1px;
+            background-color: #dee2e6;
+        }
+        .timeline-item{
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+        .timeline-item::before{
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            z-index: 1;
+        }
+
+        /* 지도 */
+        .map {
+            width: 60dvw;
+            height: 100dvh;
+            background-color: black;
+        }
+
     </style>
 </head>
 
@@ -121,7 +171,32 @@
 
     </div>
     <div class="main">
-        <div id="cesiumContainer"></div>
+        <div class="sidebar">
+            <!-- Text search -->
+            <div class="text-bold pb-2">Search</div>
+
+            <input type="text" id="searchInput" placeholder="Find" class="input">
+
+            <!-- search item -->
+            <div id="resultList">
+                <div class="search-item">안녕하세요</div>
+                <div class="search-item">안녕</div>
+                <div class="search-item">바보</div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="text-bold pt-5">Timeline</div>
+
+            <!-- Timeline list -->
+             <ul class="timeline">
+                <li class="timeline-item">3 hours ago ...</li>
+                <li class="timeline-item">1 month ago ...</li>
+             </ul>
+        </div>
+
+        <!-- map -->
+        <!-- <div class="map"></div>  -->
+        <div id="cesiumContainer" class="map"></div>
         <script type="module">
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
@@ -147,19 +222,19 @@
                 terrain: Cesium.Terrain.fromWorldTerrain(),
             });
 
-            // Fly the camera to San Francisco at the given longitude, latitude, and height.
-            viewer.camera.flyTo({
-                destination: Cesium.Cartesian3.fromDegrees(126.922056, 37.389132, 1200),
-                orientation: {
-                    heading: Cesium.Math.toRadians(-30.0),
-                    pitch: Cesium.Math.toRadians(-80.0),
-                }
-            });
+            // // Fly the camera to San Francisco at the given longitude, latitude, and height.
+            // viewer.camera.flyTo({
+            //     destination: Cesium.Cartesian3.fromDegrees(126.922056, 37.389132, 1200),
+            //     orientation: {
+            //         heading: Cesium.Math.toRadians(-30.0),
+            //         pitch: Cesium.Math.toRadians(-80.0),
+            //     }
+            // });
 
-            // Add Cesium OSM Buildings, a global 3D buildings layer.
-            const buildingTileset = await Cesium.createOsmBuildingsAsync();
+            // // Add Cesium OSM Buildings, a global 3D buildings layer.
+            // const buildingTileset = await Cesium.createOsmBuildingsAsync();
 
-            viewer.scene.primitives.add(buildingTileset);
+            // viewer.scene.primitives.add(buildingTileset);
 
             // style 적용
             // buildingTileset.style = new Cesium.Cesium3DTileStyle({
@@ -170,6 +245,27 @@
             //     ]
             //   }
             // })
+
+            const searchInput = document.getElementById('searchInput');
+            const items = document.querySelectorAll('.search-item');
+            
+            // Text Search Function
+            searchInput.addEventListener('input', (e) => {
+                const filter = e.target.value.toLowerCase(); // 입력값을 소문자로 변환
+
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+
+                    // 3. 텍스트 포함 여부 확인
+                    if (text.includes(filter)) {
+                        item.style.display = ""; // 보임
+                    } else {
+                        item.style.display = "none"; // 숨김
+                    }
+                });
+            });
+
+
 
         </script>
         <script src="./json_reader.js"></script>

@@ -140,9 +140,24 @@
 .py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
 .py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
 
+
+
+
+
 /* 버튼 */
 .btn { display: flex; align-items: center; justify-content: center; 
     border: solid 2px #dee2e6; border-radius: 0.25rem; 
     background-color: #f8f9fa; padding: 0.25rem; cursor: pointer;}
 .btn:hover{ background-color: #dee2e6;}
 .rounded { border-radius: 50%; }
+
+/* 텍스트 weight 지정 */
+.text-bold{ font-weight: 600;}
+
+
+/* 입력창 */
+.input{ background-color: #f8f9fa; border: solid 2px #dee2e6;
+        border-radius: 0.25rem; padding: 0.5rem;}
+
+/* 부모에 따른 넓이 조절 */
+.w-80{ width: 80%;}
