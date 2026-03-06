@@ -147,8 +147,12 @@
 /* 버튼 */
 .btn { display: flex; align-items: center; justify-content: center; 
     border: solid 2px #dee2e6; border-radius: 0.25rem; 
-    background-color: #f8f9fa; padding: 0.25rem; cursor: pointer;}
+    background-color: #f8f9fa; padding: 0.5rem; cursor: pointer;}
 .btn:hover{ background-color: #dee2e6;}
+.btn-sm { display: flex; align-items: center; justify-content: space-between; 
+    border: solid 2px #dee2e6; padding: 0.25rem; border-radius: 0.25rem; 
+    background-color: #f8f9fa;  cursor: pointer;}
+.btn-sm:hover{ background-color: #dee2e6;} 
 .rounded { border-radius: 50%; }
 
 /* 텍스트 weight 지정 */
