@@ -33,7 +33,6 @@
             background-color: #f8f9fa;
             border: solid 2px #dee2e6;
         }
-
         .header-left {
             justify-content: left;
             align-items: center;
@@ -43,7 +42,6 @@
             padding-inline-end: 0.5rem;
             gap: 1rem;
         }
-
         .header-center {
             flex-grow: 1;
             display: flex;
@@ -52,7 +50,6 @@
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
-
         .header-right {
             justify-content: right;
             align-items: center;
@@ -97,7 +94,7 @@
         .star.acitve .star-stroke {
             fill: #ffc107;
         }
-        
+
 
         /* 타임라인 */
         .timeline {
@@ -105,7 +102,6 @@
             padding: 0;
             position: relative;
         }
-
         .timeline::before {
             content: '';
             position: absolute;
@@ -115,13 +111,11 @@
             width: 1px;
             background-color: #dee2e6;
         }
-
         .timeline-item {
             position: relative;
             padding-left: 25px;
             margin-bottom: 20px;
         }
-
         .timeline-item::before {
             content: '';
             position: absolute;
@@ -132,6 +126,47 @@
             border-radius: 50%;
             background-color: #dee2e6;
             z-index: 1;
+        }
+
+        /* drop down */
+        .drop-down-container {
+            position: relative;
+            display: inline-flex;
+        }
+        .drop-down {
+            position: absolute;
+            top: 100%;
+            list-style: none;
+            border: solid 2px #dee2e6;
+            border-radius: 0.5rem;
+            background-color: #ffff;
+            box-shadow: 0px 4px 12px 4px #dee2e6;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            margin-top: 0.25rem;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            z-index: 10000;
+        }
+        .drop-down.show{
+            opacity: 1;
+            display: inline-flex;
+        }
+        .drop-down-list {
+            display: inline-flex;
+            gap: 8px;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            border-radius: 0.5rem;
+
+        }
+        .drop-down-list:hover {
+            background-color: #dee2e6;
         }
 
         /* 지도 */
@@ -205,7 +240,7 @@
             <div id="resultList">
                 <div class="search-item">
                     <div>안녕하세요</div>
-                    <button class="btn-sm star">
+                    <button class="btn btn-sm star">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <path class="star-fill"
                                 d="m8.125 7.092l2.608-3.47q.242-.324.568-.473T12 3t.699.149t.568.472l2.608 3.471l4.02 1.368q.534.18.822.602t.289.938q0 .242-.069.475t-.23.45l-2.634 3.573l.1 3.83q.025.703-.47 1.188q-.493.484-1.14.484l-.453-.056L12 18.733l-4.11 1.211q-.124.05-.236.053T7.437 20q-.666 0-1.15-.484q-.485-.485-.46-1.187l.1-3.856l-2.629-3.548q-.161-.217-.23-.45T3 10q0-.51.295-.941t.83-.618" />
@@ -217,7 +252,7 @@
                 </div>
                 <div class="search-item">
                     <div>안녕</div>
-                    <button class="btn-sm star">
+                    <button class="btn btn-sm star">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <path class="star-fill"
                                 d="m8.125 7.092l2.608-3.47q.242-.324.568-.473T12 3t.699.149t.568.472l2.608 3.471l4.02 1.368q.534.18.822.602t.289.938q0 .242-.069.475t-.23.45l-2.634 3.573l.1 3.83q.025.703-.47 1.188q-.493.484-1.14.484l-.453-.056L12 18.733l-4.11 1.211q-.124.05-.236.053T7.437 20q-.666 0-1.15-.484q-.485-.485-.46-1.187l.1-3.856l-2.629-3.548q-.161-.217-.23-.45T3 10q0-.51.295-.941t.83-.618" />
@@ -229,7 +264,7 @@
                 </div>
                 <div class="search-item">
                     <div>안녕하</div>
-                    <button class="btn-sm star">
+                    <button class="btn btn-sm star">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <path class="star-fill"
                                 d="m8.125 7.092l2.608-3.47q.242-.324.568-.473T12 3t.699.149t.568.472l2.608 3.471l4.02 1.368q.534.18.822.602t.289.938q0 .242-.069.475t-.23.45l-2.634 3.573l.1 3.83q.025.703-.47 1.188q-.493.484-1.14.484l-.453-.056L12 18.733l-4.11 1.211q-.124.05-.236.053T7.437 20q-.666 0-1.15-.484q-.485-.485-.46-1.187l.1-3.856l-2.629-3.548q-.161-.217-.23-.45T3 10q0-.51.295-.941t.83-.618" />
@@ -250,12 +285,51 @@
                 <li class="timeline-item">1 month ago ...</li>
             </ul>
 
+            <!-- button drop down -->
+            <div class="d-flex drop-down-container">
+                <button id="ask-drop-down" class="btn btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M3 20.077V4.616q0-.691.463-1.153T4.615 3h14.77q.69 0 1.152.463T21 4.616v10.769q0 .69-.463 1.153T19.385 17H6.077zM5.65 16h13.735q.23 0 .423-.192t.192-.423V4.615q0-.23-.192-.423T19.385 4H4.615q-.23 0-.423.192T4 4.615v13.03zM4 16V4z" />
+                    </svg>
+                    <div>Ask</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12 14.308L8.192 10.5h7.616z" />
+                    </svg>
+                </button>
+
+                <ul class="drop-down">
+                    <li class="drop-down-list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="m9.55 15.88l8.802-8.801q.146-.146.344-.156t.363.156t.166.357t-.165.356l-8.944 8.95q-.243.243-.566.243t-.566-.243l-4.05-4.05q-.146-.146-.152-.347t.158-.366t.357-.165t.357.165z" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M3 20.077V4.616q0-.691.463-1.153T4.615 3h14.77q.69 0 1.152.463T21 4.616v10.769q0 .69-.463 1.153T19.385 17H6.077zM5.65 16h13.735q.23 0 .423-.192t.192-.423V4.615q0-.23-.192-.423T19.385 4H4.615q-.23 0-.423.192T4 4.615v13.03zM4 16V4z" />
+                        </svg>
+                        <div>Ask</div>
+                    </li>
+                    <li class="drop-down-list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="m9.55 15.88l8.802-8.801q.146-.146.344-.156t.363.156t.166.357t-.165.356l-8.944 8.95q-.243.243-.566.243t-.566-.243l-4.05-4.05q-.146-.146-.152-.347t.158-.366t.357-.165t.357.165z" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M11.77 20v-1h6.615q.25 0 .432-.154q.183-.154.183-.404v-6.888q0-2.81-2.066-4.693Q14.867 4.977 12 4.977T7.066 6.861Q5 8.744 5 11.554v5.677h-.5q-.613 0-1.057-.415Q3 16.402 3 15.79v-1.885q0-.448.291-.795q.292-.348.709-.565l.017-1.229q.027-1.565.68-2.9t1.744-2.323t2.524-1.54T12 4t3.033.552t2.513 1.538t1.735 2.32t.702 2.9L20 12.513q.398.187.699.503q.301.315.301.757v2.166q0 .442-.301.757t-.699.502v1.244q0 .652-.472 1.105T18.385 20zm-2.925-6.672q-.23-.21-.23-.52t.23-.53t.54-.22t.539.22t.23.53t-.23.52t-.54.21t-.539-.21m5.231 0q-.23-.21-.23-.52t.23-.53t.54-.22t.539.22t.23.53t-.23.52t-.54.21t-.539-.21M6.717 11.95q-.136-2.246 1.447-3.829q1.582-1.583 3.886-1.583q1.936 0 3.432 1.163t1.826 3.055q-1.987-.025-3.688-1.014t-2.61-2.75q-.362 1.731-1.505 3.034q-1.144 1.303-2.788 1.924" />
+                        </svg>
+                        <div>Agent</div>
+                    </li>
+                </ul>
+            </div>
 
         </div>
 
         <!-- map -->
         <!-- <div class="map"></div>  -->
         <div id="cesiumContainer" class="map"></div>
+
         <script type="module">
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
@@ -326,15 +400,24 @@
 
             const stars = document.querySelectorAll('.star')
             // star button clicked
-            stars.forEach( star => {
+            stars.forEach(star => {
                 star.addEventListener('click', (e) => {
                     const nowStar = e.currentTarget;
                     star.classList.toggle('active');
-                    
+
                     const starText = nowStar.querySelector('.star-text')
-                    starText.textContent = nowStar.classList.contains('active')? 'starred' : 'star';
+                    starText.textContent = nowStar.classList.contains('active') ? 'starred' : 'star';
                 })
             })
+
+            const askDropDown = document.querySelector('#ask-drop-down')
+            //drop down button clicked
+            askDropDown.addEventListener('click', e => {
+                const ul = e.currentTarget.nextElementSibling;
+                ul.classList.toggle('show')
+            })
+
+
         </script>
         <script src="./json_reader.js"></script>
     </div>
