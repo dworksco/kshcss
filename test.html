@@ -305,7 +305,7 @@
 
             <!-- ask button drop down -->
             <div class="d-flex drop-down-container">
-                <button id="ask-drop-down" class="btn btn-sm">
+                <button id="ask-drop-down-button" class="btn btn-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="currentColor"
                             d="M3 20.077V4.616q0-.691.463-1.153T4.615 3h14.77q.69 0 1.152.463T21 4.616v10.769q0 .69-.463 1.153T19.385 17H6.077zM5.65 16h13.735q.23 0 .423-.192t.192-.423V4.615q0-.23-.192-.423T19.385 4H4.615q-.23 0-.423.192T4 4.615v13.03zM4 16V4z" />
@@ -431,42 +431,43 @@
                 })
             })
 
-            const askDropDown = document.querySelector('#ask-drop-down')
-            const dropDownList = document.querySelectorAll('.drop-down-list')
-            //drop down button clicked
-            askDropDown.addEventListener('click', e => {
-                const ul = e.currentTarget.nextElementSibling;
-                ul.classList.toggle('show')
+            const dropDownButton = document.querySelector('#ask-drop-down-button')
+            const dropDownContainer = document.querySelector('.drop-down-container')
+            const dropDownMenu = dropDownContainer.querySelector('.drop-down')
 
+            // drop down button clicked
+            dropDownButton.addEventListener('click', e => {
+                dropDownMenu.classList.toggle('show')
             })
 
-            const askSVGList = dropDownList[0].querySelectorAll('svg');
-            const agentSVGList = dropDownList[1].querySelectorAll('svg');
             // list of drop down button's icon path
-            const dropDownButtonIconPaths = askDropDown.querySelectorAll('svg')[0].querySelectorAll('path')
+            const dropDownButtonIconPaths = dropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
 
-            // Ask clicked
-            dropDownList[0].addEventListener('click', e => {
-                askSVGList[0].style.opacity = "1";
-                agentSVGList[0].style.opacity = "0";
+            // drop down list clicked
+            dropDownMenu.addEventListener('click', e => {
+                const item = e.target.closest('.drop-down-list')
+                if(!item) return;
 
-                // change drop down button icon -> ask
-                dropDownButtonIconPaths[0].style.opacity = "1";
-                dropDownButtonIconPaths[1].style.opacity = "0";
-                askDropDown.querySelector('div').textContent = 'Ask'
+                // selected text of drop down button list 
+                const selectedText = item.querySelector('div').textContent;
+
+                // 1.change drop down button text
+                dropDownButton.querySelector('div').textContent = selectedText;
+
+                // 2.change drop down button icon
+                const isAgent = selectedText === 'Agent';
+                dropDownButtonIconPaths[0].style.opacity = isAgent? "0" : "1";
+                dropDownButtonIconPaths[1].style.opacity = isAgent? "1" : "0";
+
+                // 3.check icon update
+                const dropDownList = dropDownMenu.querySelectorAll('.drop-down-list')
+                // reset all check icon
+                dropDownList.forEach( li => { li.querySelector('svg:first-child').style.opacity = "0"})
+                item.querySelector('svg:first-child').style.opacity = "1";
+
+                // 4. fold drop down menu
+                dropDownMenu.classList.remove('show')
             })
-
-            // Agent clicked
-            dropDownList[1].addEventListener('click', e => {
-                askSVGList[0].style.opacity = "0";
-                agentSVGList[0].style.opacity = "1";
-
-                // change drop down button icon -> agent
-                dropDownButtonIconPaths[0].style.opacity = "0";
-                dropDownButtonIconPaths[1].style.opacity = "1";
-                askDropDown.querySelector('div').textContent = 'Agent'
-            })
-
 
 
         </script>
