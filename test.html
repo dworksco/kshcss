@@ -96,7 +96,7 @@
             opacity: 1;
         }
 
-        .star.acitve .star-stroke {
+        .star.active .star-stroke {
             fill: #ffc107;
         }
 
@@ -142,7 +142,7 @@
             display: inline-flex;
         }
 
-        .drop-down {
+        .drop-down-menu {
             position: absolute;
             top: 100%;
             list-style: none;
@@ -160,7 +160,7 @@
             z-index: 100;
         }
 
-        .drop-down.show {
+        .drop-down-menu.show {
             opacity: 1;
             display: inline-flex;
         }
@@ -250,7 +250,7 @@
     <div class="main">
         <div class="sidebar">
             <!-- Text search -->
-            <div class="text-bold pb-2">Search</div>
+            <div class="text-bold mb-2">Search</div>
 
             <input type="text" id="searchInput" placeholder="Find" class="input">
 
@@ -295,7 +295,7 @@
             </div>
 
             <!-- Timeline -->
-            <div class="text-bold pt-5">Timeline</div>
+            <div class="text-bold mt-5">Timeline</div>
 
             <!-- Timeline list -->
             <ul class="timeline">
@@ -303,9 +303,10 @@
                 <li class="timeline-item">1 month ago ...</li>
             </ul>
 
-            <!-- ask button drop down -->
-            <div class="d-flex drop-down-container">
-                <button id="ask-drop-down-button" class="btn btn-sm">
+            <!-- ask/agent mode button drop down -->
+            <div class="text-bold mt-5 mb-2">Ask/Agent mode</div>
+            <div id="modeDropDownContainer" class="d-flex drop-down-container">
+                <button id="modeDropDownButton" class="btn btn-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="currentColor"
                             d="M3 20.077V4.616q0-.691.463-1.153T4.615 3h14.77q.69 0 1.152.463T21 4.616v10.769q0 .69-.463 1.153T19.385 17H6.077zM5.65 16h13.735q.23 0 .423-.192t.192-.423V4.615q0-.23-.192-.423T19.385 4H4.615q-.23 0-.423.192T4 4.615v13.03zM4 16V4z" />
@@ -318,7 +319,7 @@
                     </svg>
                 </button>
 
-                <ul class="drop-down">
+                <ul class="drop-down-menu">
                     <li class="drop-down-list">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <path fill="currentColor"
@@ -345,6 +346,33 @@
                 </ul>
             </div>
 
+            <!-- add drop down button -->
+            <div class="text-bold mt-5 mb-2">Add</div>
+            <div id="addDropDownContainer" class="drop-down-container">
+                <input type="file" id="fileInput" style="display: none;" multiple>
+                <button id="addDropDownButton" class="btn btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M11.643 19.856q-.143-.143-.143-.356v-7h-7q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h7v-7q0-.213.144-.356T12.001 4t.356.144t.143.356v7h7q.213 0 .356.144t.144.357t-.144.356t-.356.143h-7v7q0 .213-.144.356t-.357.144t-.356-.144" />
+                    </svg>
+                </button>
+                <ul class="drop-down-menu">
+                    <li class="drop-down-list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M16.346 11.385V6.769h1v4.616zm-5.538 5.457q-.452-.269-.726-.734q-.274-.466-.274-1.031V6.769h1zM11.96 21q-2.271 0-3.846-1.595t-1.575-3.867v-8.73q0-1.587 1.09-2.697Q8.722 3 10.309 3t2.678 1.11t1.091 2.698V14h-1V6.789q-.006-1.166-.805-1.977T10.309 4t-1.967.821t-.804 1.987v8.73q-.005 1.853 1.283 3.157Q10.11 20 11.961 20q.556 0 1.056-.124t.945-.372v1.11q-.468.2-.972.293q-.505.093-1.03.093m4.386-1v-2.616h-2.615v-1h2.615V13.77h1v2.615h2.616v1h-2.616V20z" />
+                        </svg>
+                        <div>Files and folders...</div>
+                    </li>
+                    <li id="uploadBtn" class="drop-down-list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M6.616 19q-.691 0-1.153-.462T5 17.384v-1.923q0-.213.143-.356t.357-.144t.357.144t.143.356v1.923q0 .231.192.424t.423.192h10.77q.23 0 .423-.192t.192-.424v-1.923q0-.213.143-.356t.357-.144t.357.144t.143.356v1.923q0 .691-.462 1.153T17.384 19zM11.5 6.927L9.529 8.898q-.146.146-.347.153t-.366-.159q-.16-.165-.163-.353q-.003-.189.163-.354l2.618-2.62q.132-.13.268-.183q.137-.053.298-.053t.298.053t.268.184l2.618 2.619q.147.146.154.344q.006.198-.153.363q-.166.166-.357.169t-.357-.163L12.5 6.927v8.15q0 .214-.143.357t-.357.143t-.357-.143t-.143-.357z" />
+                        </svg>
+                        <div>Upload from computer</div>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <!-- map -->
@@ -431,43 +459,90 @@
                 })
             })
 
-            const dropDownButton = document.querySelector('#ask-drop-down-button')
-            const dropDownContainer = document.querySelector('.drop-down-container')
-            const dropDownMenu = dropDownContainer.querySelector('.drop-down')
+            const modeDropDownButton = document.querySelector('#modeDropDownButton')
+            const modeDropDownContainer = document.querySelector('#modeDropDownContainer')
+            const modeDropDownMenu = modeDropDownContainer.querySelector('.drop-down-menu')
 
-            // drop down button clicked
-            dropDownButton.addEventListener('click', e => {
-                dropDownMenu.classList.toggle('show')
+            // ask/agent mode drop down button clicked
+            modeDropDownButton.addEventListener('click', e => {
+                modeDropDownMenu.classList.toggle('show')
             })
 
             // list of drop down button's icon path
-            const dropDownButtonIconPaths = dropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
+            const modeDropDownButtonIconPaths = modeDropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
 
             // drop down list clicked
-            dropDownMenu.addEventListener('click', e => {
+            modeDropDownMenu.addEventListener('click', e => {
                 const item = e.target.closest('.drop-down-list')
-                if(!item) return;
+                if (!item) return;
 
                 // selected text of drop down button list 
                 const selectedText = item.querySelector('div').textContent;
 
                 // 1.change drop down button text
-                dropDownButton.querySelector('div').textContent = selectedText;
+                modeDropDownButton.querySelector('div').textContent = selectedText;
 
                 // 2.change drop down button icon
                 const isAgent = selectedText === 'Agent';
-                dropDownButtonIconPaths[0].style.opacity = isAgent? "0" : "1";
-                dropDownButtonIconPaths[1].style.opacity = isAgent? "1" : "0";
+                modeDropDownButtonIconPaths[0].style.opacity = isAgent ? "0" : "1";
+                modeDropDownButtonIconPaths[1].style.opacity = isAgent ? "1" : "0";
 
                 // 3.check icon update
-                const dropDownList = dropDownMenu.querySelectorAll('.drop-down-list')
+                const modeDropDownList = modeDropDownMenu.querySelectorAll('.drop-down-list')
                 // reset all check icon
-                dropDownList.forEach( li => { li.querySelector('svg:first-child').style.opacity = "0"})
+                modeDropDownList.forEach(li => { li.querySelector('svg:first-child').style.opacity = "0" })
                 item.querySelector('svg:first-child').style.opacity = "1";
 
                 // 4. fold drop down menu
-                dropDownMenu.classList.remove('show')
+                modeDropDownMenu.classList.remove('show')
             })
+
+            const addDropDownContainer = document.querySelector('#addDropDownContainer')
+            const addDropDownMenu = addDropDownContainer.querySelector('.drop-down-menu')
+            const addDropDownButton = document.querySelector('#addDropDownButton')
+            const fileInput = document.querySelector('#fileInput')
+            // add drop down button clicked
+            addDropDownButton.addEventListener('click', e => {
+                addDropDownMenu.classList.toggle('show')
+            })
+            addDropDownMenu.addEventListener('click', e => {
+                const item = e.target.closest('.drop-down-list')
+
+                // upload from computer 기능 구현
+                if (item === uploadBtn) {
+                    fileInput.click();
+                }
+            })
+
+            // select file in file system
+            fileInput.addEventListener('change', e => {
+                const selectedFiles = e.target.files
+                Array.from(selectedFiles).forEach(file => {
+                    
+                    // create file button
+                    const uploadedFile = document.createElement('button');
+                    uploadedFile.classList = 'btn btn-sm'
+                    uploadedFile.innerHTML = `<div>${file.name}</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z" />
+                    </svg>`
+                    addDropDownContainer.append(uploadedFile)
+
+                    const deleteSvg = uploadedFile.querySelector('svg')
+                    // delete file button
+                    deleteSvg.addEventListener('click', e => {
+                        uploadedFile.remove();
+                    })
+                })
+
+                // 2.fold drop down button Menu
+                addDropDownMenu.classList.remove('show')
+            })
+
+
+
+
 
 
         </script>
