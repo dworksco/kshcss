@@ -37,6 +37,8 @@
 .flex-nowrap { flex-wrap: nowrap !important; }
 .flex-wrap   { flex-wrap: wrap !important; }
 
+/* 부모에 따른 넓이 조절 */
+.w-80{ width: 80%;}
 
 
 /* --- Margin (바깥 여백) --- */
@@ -140,7 +142,13 @@
 .py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
 .py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
 
-
+/* 글씨 크기 */
+.fs-1 { font-size: 2rem !important; }      /* 매우 큼 */
+.fs-2 { font-size: 1.5rem !important; }    /* 큼 */
+.fs-3 { font-size: 1.25rem !important; }   /* 중간 */
+.fs-4 { font-size: 1rem !important; }      /* 기본 */
+.fs-5 { font-size: 0.875rem !important; }  /* 작음 */
+.fs-6 { font-size: 0.75rem !important; }   /* 매우 작음 */
 
 
 
@@ -153,6 +161,9 @@
 .btn-sm:hover{ background-color: #dee2e6;} 
 .rounded { border-radius: 50%; }
 
+/* 삭제 버튼 */
+.btn-delete{ border: none; background-color: transparent; }
+
 /* 텍스트 weight 지정 */
 .text-bold{ font-weight: 600;}
 
@@ -161,6 +172,4 @@
 .input{ background-color: #f8f9fa; border: solid 2px #dee2e6;
         border-radius: 0.25rem; padding: 0.5rem;}
 
-/* 부모에 따른 넓이 조절 */
-.w-80{ width: 80%;}
 
