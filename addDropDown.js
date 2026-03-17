@@ -2,10 +2,12 @@ const addDropDownContainer = document.querySelector('#addDropDownContainer')
 const addDropDownMenu = addDropDownContainer.querySelector('.drop-down-menu')
 const addDropDownButton = document.querySelector('#addDropDownButton')
 const fileInput = document.querySelector('#fileInput')
+
 // click add drop down button
 addDropDownButton.addEventListener('click', e => {
     addDropDownMenu.classList.toggle('show')
 })
+
 // upload file from computer 기능 구현
 addDropDownMenu.addEventListener('click', e => {
     const item = e.target.closest('.drop-down-list')

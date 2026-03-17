@@ -1,6 +1,14 @@
 const map = document.querySelector('#cesiumContainer');
 const widget = document.querySelectorAll('.overlay');
 const widgetHeader = document.querySelector('.widget-header')
+const widgetToggleBtn = document.querySelectorAll('.widget-toggle-btn')
+
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+const widgetPannel = document.querySelector('.widget-pannel')
+const closeBtn = document.querySelectorAll('.btn-close')
 
 // widget 초기 위치 설정
 function setInitialWidgetPosition() {
@@ -16,7 +24,6 @@ function setInitialWidgetPosition() {
 window.addEventListener('load', setInitialWidgetPosition);
 window.addEventListener('resize', setInitialWidgetPosition);
 
-const widgetToggleBtn = document.querySelectorAll('.widget-toggle-btn')
 // click widget toggle btn
 widgetToggleBtn.forEach(btn => {
     btn.addEventListener('click', e => {
@@ -30,11 +37,6 @@ widgetToggleBtn.forEach(btn => {
         widget.classList.add('visible')
     })
 })
-
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
-const widgetPannel = document.querySelector('.widget-pannel')
 
 // drag widget
 widgetHeader.addEventListener('mousedown', e => {
@@ -73,8 +75,6 @@ document.addEventListener('mouseup', e => {
     document.body.style.userSelect = '';
 })
 
-
-const closeBtn = document.querySelectorAll('.btn-close')
 // click close button
 closeBtn.forEach(btn => {
     btn.addEventListener('click', e => {
