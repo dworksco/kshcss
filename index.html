@@ -23,6 +23,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         /* 헤더 */
@@ -278,11 +279,11 @@
             <div class="widgetContainer">
                 <div id="cesiumContainer" class="map"></div>
 
-                <div class="overlay">
+                <div class="overlay visible widget-pannel">
                     <!-- widget -->
                     <div class="mapwidget">
-                        <!-- title & close button -->
-                        <div class="d-flex justify-content-between">
+                        <!-- widget header -->
+                        <div class="d-flex justify-content-between widget-header">
                             <div class="text-bold fs-1 gray">Widget</div>
                             <button class="btn-close">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -326,7 +327,7 @@
                     </div>
                 </div>
 
-                <div class="overlay widget-toggle-btn">
+                <div class="overlay widget-toggle-btn hidden">
                     <button class="btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <path fill="currentColor"
@@ -338,12 +339,32 @@
         </div>
 
         <script type="module">
+
+            const map = document.querySelector('#cesiumContainer');
+            const widget = document.querySelectorAll('.overlay');
+            const widgetHeader = document.querySelector('.widget-header')
+            
+            // widget 초기 위치 설정
+            function setInitialWidgetPosition() {
+                const rect = map.getBoundingClientRect();
+
+                widget.forEach(widget => {
+                    widget.style.top = `${rect.top + 32}px`;
+                    widget.style.left = `${rect.left + 16}px`;
+                })
+            }
+
+            // 창 변경사항에 따라 초기위치 설정
+            window.addEventListener('load', setInitialWidgetPosition);
+            window.addEventListener('resize', setInitialWidgetPosition);
+
+
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
             const mytkn = urlParams.get('mytkn');
 
-            // Cesium.Ion.defaultAccessToken = urlParams;
             Cesium.Ion.defaultAccessToken = mytkn;
+            // Cesium.Ion.defaultAccessToken = urlParams;
             const viewer = new Cesium.Viewer("cesiumContainer", {
                 timeline: false,
                 animation: false,
@@ -364,7 +385,7 @@
 
             // Fly the camera to San Francisco at the given longitude, latitude, and height.
             // viewer.camera.flyTo({
-            //   destination: Cesium.Cartesian3.fromDegrees(126.922056, 37.389132, 1200),
+                //   destination: Cesium.Cartesian3.fromDegrees(126.922056, 37.389132, 1200),
             //   orientation: {
             //     heading: Cesium.Math.toRadians(-30.0),
             //     pitch: Cesium.Math.toRadians(-80.0),
@@ -388,7 +409,6 @@
 
             const searchInput = document.getElementById('searchInput');
             const items = document.querySelectorAll('.search-item');
-
             // Text Search Function
             searchInput.addEventListener('input', (e) => {
                 const filter = e.target.value.toLowerCase(); // 입력값을 소문자로 변환
@@ -406,7 +426,7 @@
             });
 
             const stars = document.querySelectorAll('.star')
-            // star button clicked
+            // click 즐겨찾기 button 
             stars.forEach(star => {
                 star.addEventListener('click', (e) => {
                     const nowStar = e.currentTarget;
@@ -429,7 +449,7 @@
             // list of drop down button's icon path
             const modeDropDownButtonIconPaths = modeDropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
 
-            // drop down list clicked
+            // click drop down list
             modeDropDownMenu.addEventListener('click', e => {
                 const item = e.target.closest('.drop-down-list')
                 if (!item) return;
@@ -459,14 +479,14 @@
             const addDropDownMenu = addDropDownContainer.querySelector('.drop-down-menu')
             const addDropDownButton = document.querySelector('#addDropDownButton')
             const fileInput = document.querySelector('#fileInput')
-            // add drop down button clicked
+            // click add drop down button
             addDropDownButton.addEventListener('click', e => {
                 addDropDownMenu.classList.toggle('show')
             })
+            // upload file from computer 기능 구현
             addDropDownMenu.addEventListener('click', e => {
                 const item = e.target.closest('.drop-down-list')
 
-                // upload from computer 기능 구현
                 if (item === uploadBtn) {
                     fileInput.click();
                 }
@@ -498,12 +518,12 @@
                 addDropDownMenu.classList.remove('show')
             })
 
-            // click close button
             const closeBtn = document.querySelectorAll('.btn-close')
+            // click close button
             closeBtn.forEach(btn => {
                 btn.addEventListener('click', e => {
                     const widget = e.currentTarget.closest('.overlay')
-                    const widgetToggleBtn = widget.nextElementSibling            
+                    const widgetToggleBtn = widget.nextElementSibling
                     widget.classList.remove('visible');
                     widget.classList.add('hidden');
 
@@ -513,9 +533,9 @@
                 })
             });
 
-            // click widget toggle btn
             const widgetToggleBtn = document.querySelectorAll('.widget-toggle-btn')
-            widgetToggleBtn.forEach( btn => {
+            // click widget toggle btn
+            widgetToggleBtn.forEach(btn => {
                 btn.addEventListener('click', e => {
                     const toggle = e.currentTarget.closest('.overlay')
                     const widget = toggle.previousElementSibling
@@ -528,6 +548,47 @@
                 })
             })
 
+            let isDragging = false;
+            let offsetX = 0;
+            let offsetY = 0;
+            const widgetPannel = document.querySelector('.widget-pannel')
+            
+            // drag widget
+            widgetHeader.addEventListener('mousedown', e => {
+                // 닫기 버튼을 눌렀을 때는 드래그 X
+                if (e.currentTarget.closest('.btn-close')) return;
+
+                isDragging = true;
+
+                const rect = widgetPannel.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+
+                document.body.style.userSelect = 'none';
+            })
+
+            document.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                // 화면 밖으로 너무 나가지 않게 제한
+                const maxLeft = window.innerWidth - widgetPannel.offsetWidth;
+                const maxTop = window.innerHeight - widgetPannel.offsetHeight;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                widgetPannel.style.left = `${newLeft}px`
+                widgetPannel.style.top = `${newTop}px`
+
+            })
+
+            document.addEventListener('mouseup', e => {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            })
 
 
         </script>

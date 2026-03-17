@@ -106,47 +106,53 @@
 }
 
 /* widget */
-.widgetContainer{
+.widgetContainer {
     position: relative;
     width: 100%;
     height: 100%;
 }
-.overlay{
-    position: absolute;
-    top: 10rem;
-    bottom: 10rem;
-    left: 5rem;
-    right: 5rem;
+
+.overlay {
+    position: fixed;
+    width: 30rem;
+    min-width: 30rem;
+    height: 25rem;
     z-index: 10000;
 }
+
 /* overlay 겹침 방지 */
-.overlay.hidden{
+.overlay.hidden {
     opacity: 0;
     pointer-events: none;
 }
-.overlay.visible{
+
+.overlay.visible {
     opacity: 1;
     pointer-events: auto;
 }
-.mapwidget{
+
+.mapwidget {
     width: 100%;
     height: 100%;
     padding: 1rem;
     background-color: rgba(255, 255, 255, 1);
     border-radius: 2.5rem;
     border: 3px solid #dee2e6;
+    box-sizing: border-box;
 }
-.widget-toggle-btn{
-    opacity: 0;
+
+.widget-header {
+    cursor: move;
+    user-select: none;
 }
 
 /* color */
-.gray{
+.gray {
     color: #212529;
 }
 
 /* seperate line */
-.line{
+.line {
     padding-top: 1rem;
     border-bottom: solid 2px #dee2e6;
     padding-left: 0;
