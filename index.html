@@ -405,86 +405,7 @@
             })
         })
 
-        const modeDropDownButton = document.querySelector('#modeDropDownButton')
-        const modeDropDownContainer = document.querySelector('#modeDropDownContainer')
-        const modeDropDownMenu = modeDropDownContainer.querySelector('.drop-down-menu')
-
-        // ask/agent mode drop down button clicked
-        modeDropDownButton.addEventListener('click', e => {
-            modeDropDownMenu.classList.toggle('show')
-        })
-
-        // list of drop down button's icon path
-        const modeDropDownButtonIconPaths = modeDropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
-
-        // click drop down list
-        modeDropDownMenu.addEventListener('click', e => {
-            const item = e.target.closest('.drop-down-list')
-            if (!item) return;
-
-            // selected text of drop down button list 
-            const selectedText = item.querySelector('div').textContent;
-
-            // 1.change drop down button text
-            modeDropDownButton.querySelector('div').textContent = selectedText;
-
-            // 2.change drop down button icon
-            const isAgent = selectedText === 'Agent';
-            modeDropDownButtonIconPaths[0].style.opacity = isAgent ? "0" : "1";
-            modeDropDownButtonIconPaths[1].style.opacity = isAgent ? "1" : "0";
-
-            // 3.check icon update
-            const modeDropDownList = modeDropDownMenu.querySelectorAll('.drop-down-list')
-            // reset all check icon
-            modeDropDownList.forEach(li => { li.querySelector('svg:first-child').style.opacity = "0" })
-            item.querySelector('svg:first-child').style.opacity = "1";
-
-            // 4. fold drop down menu
-            modeDropDownMenu.classList.remove('show')
-        })
-
-        const addDropDownContainer = document.querySelector('#addDropDownContainer')
-        const addDropDownMenu = addDropDownContainer.querySelector('.drop-down-menu')
-        const addDropDownButton = document.querySelector('#addDropDownButton')
-        const fileInput = document.querySelector('#fileInput')
-        // click add drop down button
-        addDropDownButton.addEventListener('click', e => {
-            addDropDownMenu.classList.toggle('show')
-        })
-        // upload file from computer 기능 구현
-        addDropDownMenu.addEventListener('click', e => {
-            const item = e.target.closest('.drop-down-list')
-
-            if (item === uploadBtn) {
-                fileInput.click();
-            }
-        })
-
-        // select file in file system
-        fileInput.addEventListener('change', e => {
-            const selectedFiles = e.target.files
-            Array.from(selectedFiles).forEach(file => {
-
-                // create file button
-                const uploadedFile = document.createElement('button');
-                uploadedFile.classList = 'btn btn-sm'
-                uploadedFile.innerHTML = `<div>${file.name}</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                        <path fill="currentColor"
-                                        d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z" />
-                                        </svg>`
-                addDropDownContainer.append(uploadedFile)
-
-                const deleteSvg = uploadedFile.querySelector('svg')
-                // delete file button
-                deleteSvg.addEventListener('click', e => {
-                    uploadedFile.remove();
-                })
-            })
-
-            // 2.fold drop down button Menu
-            addDropDownMenu.classList.remove('show')
-        })
+ 
 
         const closeBtn = document.querySelectorAll('.btn-close')
         // click close button
@@ -506,6 +427,8 @@
 
 
     </script>
+    <script src="dropDown.js"></script>
+    <script src="addDropDown.js"></script>
     <script src="searchInput.js"></script>
     <script src="./json_reader.js"></script>
     <script src="widget.js"></script>
