@@ -393,44 +393,20 @@
         // })
 
 
-        const stars = document.querySelectorAll('.star')
-        // click 즐겨찾기 button 
-        stars.forEach(star => {
-            star.addEventListener('click', (e) => {
-                const nowStar = e.currentTarget;
-                star.classList.toggle('active');
-
-                const starText = nowStar.querySelector('.star-text')
-                starText.textContent = nowStar.classList.contains('active') ? 'starred' : 'star';
-            })
-        })
 
  
 
-        const closeBtn = document.querySelectorAll('.btn-close')
-        // click close button
-        closeBtn.forEach(btn => {
-            btn.addEventListener('click', e => {
-                const widget = e.currentTarget.closest('.overlay')
-                const widgetToggleBtn = widget.nextElementSibling
-                widget.classList.remove('visible');
-                widget.classList.add('hidden');
 
-                widgetToggleBtn.classList.remove('hidden');
-                widgetToggleBtn.classList.add('visible');
-
-            })
-        });
 
 
 
 
 
     </script>
+    <script src="./json_reader.js"></script>
+    <script src="searchInput.js"></script>
     <script src="dropDown.js"></script>
     <script src="addDropDown.js"></script>
-    <script src="searchInput.js"></script>
-    <script src="./json_reader.js"></script>
     <script src="widget.js"></script>
 
 </body>

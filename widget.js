@@ -72,3 +72,19 @@ document.addEventListener('mouseup', e => {
     isDragging = false;
     document.body.style.userSelect = '';
 })
+
+
+const closeBtn = document.querySelectorAll('.btn-close')
+// click close button
+closeBtn.forEach(btn => {
+    btn.addEventListener('click', e => {
+        const widget = e.currentTarget.closest('.overlay')
+        const widgetToggleBtn = widget.nextElementSibling
+        widget.classList.remove('visible');
+        widget.classList.add('hidden');
+
+        widgetToggleBtn.classList.remove('hidden');
+        widgetToggleBtn.classList.add('visible');
+
+    })
+});

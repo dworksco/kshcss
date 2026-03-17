@@ -16,3 +16,15 @@ searchInput.addEventListener('input', (e) => {
         }
     });
 });
+
+const stars = document.querySelectorAll('.star')
+// click 즐겨찾기 button 
+stars.forEach(star => {
+    star.addEventListener('click', (e) => {
+        const nowStar = e.currentTarget;
+        star.classList.toggle('active');
+
+        const starText = nowStar.querySelector('.star-text')
+        starText.textContent = nowStar.classList.contains('active') ? 'starred' : 'star';
+    })
+})
