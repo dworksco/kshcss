@@ -16,6 +16,12 @@
     <style>
         @import url(./libs/Cesium-1.138/Build/CesiumUnminified/Widgets/widgets.css);
 
+        *,
+        *::before,
+        *::after{
+            box-sizing: border-box;
+        }
+
         html,
         body {
             width: 100%;
@@ -23,7 +29,6 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            box-sizing: border-box;
         }
 
         /* 헤더 */
@@ -280,7 +285,7 @@
             <div class="widgetContainer">
                 <div id="cesiumContainer" class="map"></div>
 
-                <div class="overlay visible widget-pannel">
+                <div class="overlay visible widget-panel">
                     <!-- widget -->
                     <div class="mapwidget">
                         <!-- widget header -->

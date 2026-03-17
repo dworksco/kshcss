@@ -7,7 +7,7 @@ let isDragging = false;
 let offsetX = 0;
 let offsetY = 0;
 
-const widgetPannel = document.querySelector('.widget-pannel')
+const widgetPanel = document.querySelector('.widget-panel')
 const closeBtn = document.querySelectorAll('.btn-close')
 
 // widget 초기 위치 설정
@@ -22,7 +22,7 @@ function setInitialWidgetPosition() {
 
 // 창 변경사항에 따라 초기위치 설정
 window.addEventListener('load', setInitialWidgetPosition);
-window.addEventListener('resize', setInitialWidgetPosition);
+// window.addEventListener('resize', setInitialWidgetPosition);
 
 // click widget toggle btn
 widgetToggleBtn.forEach(btn => {
@@ -41,11 +41,11 @@ widgetToggleBtn.forEach(btn => {
 // drag widget
 widgetHeader.addEventListener('mousedown', e => {
     // 닫기 버튼을 눌렀을 때는 드래그 X
-    if (e.currentTarget.closest('.btn-close')) return;
+    if (e.target.closest('.btn-close')) return;
 
     isDragging = true;
 
-    const rect = widgetPannel.getBoundingClientRect();
+    const rect = widgetPanel.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
 
@@ -59,14 +59,14 @@ document.addEventListener('mousemove', e => {
     let newTop = e.clientY - offsetY;
 
     // 화면 밖으로 너무 나가지 않게 제한
-    const maxLeft = window.innerWidth - widgetPannel.offsetWidth;
-    const maxTop = window.innerHeight - widgetPannel.offsetHeight;
+    const maxLeft = window.innerWidth - widgetPanel.offsetWidth;
+    const maxTop = window.innerHeight - widgetPanel.offsetHeight;
 
     newLeft = Math.max(0, Math.min(newLeft, maxLeft));
     newTop = Math.max(0, Math.min(newTop, maxTop));
 
-    widgetPannel.style.left = `${newLeft}px`
-    widgetPannel.style.top = `${newTop}px`
+    widgetPanel.style.left = `${newLeft}px`
+    widgetPanel.style.top = `${newTop}px`
 
 })
 
@@ -79,7 +79,7 @@ document.addEventListener('mouseup', e => {
 closeBtn.forEach(btn => {
     btn.addEventListener('click', e => {
         const widget = e.currentTarget.closest('.overlay')
-        const widgetToggleBtn = widget.nextElementSibling
+        const widgetToggleBtn = document.querySelector('.widget-toggle-btn')
         widget.classList.remove('visible');
         widget.classList.add('hidden');
 
@@ -88,3 +88,4 @@ closeBtn.forEach(btn => {
 
     })
 });
+

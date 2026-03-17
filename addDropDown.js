@@ -2,6 +2,7 @@ const addDropDownContainer = document.querySelector('#addDropDownContainer')
 const addDropDownMenu = addDropDownContainer.querySelector('.drop-down-menu')
 const addDropDownButton = document.querySelector('#addDropDownButton')
 const fileInput = document.querySelector('#fileInput')
+const uploadBtn = document.querySelector('#uploadBtn')
 
 // click add drop down button
 addDropDownButton.addEventListener('click', e => {
