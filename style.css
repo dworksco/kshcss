@@ -150,7 +150,13 @@
 .fs-5 { font-size: 0.875rem !important; }  /* 작음 */
 .fs-6 { font-size: 0.75rem !important; }   /* 매우 작음 */
 
-
+/* gap */
+.g-0 { gap: 0 !important; }
+.g-1 { gap: 0.25rem !important; }  /* 4px */
+.g-2 { gap: 0.5rem !important; }   /* 8px */
+.g-3 { gap: 1rem !important; }     /* 16px */
+.g-4 { gap: 1.5rem !important; }   /* 24px */
+.g-5 { gap: 3rem !important; }     /* 48px */
 
 /* 버튼 */
 .btn { display: inline-flex; align-items: center; justify-content: center;  gap: 8px;
@@ -161,15 +167,49 @@
 .btn-sm:hover{ background-color: #dee2e6;} 
 .rounded { border-radius: 50%; }
 
-/* 삭제 버튼 */
-.btn-delete{ border: none; background-color: transparent; }
+/* 닫기 버튼 */
+.btn-close{ border: none; background-color: transparent; }
 
 /* 텍스트 weight 지정 */
 .text-bold{ font-weight: 600;}
-
 
 /* 입력창 */
 .input{ background-color: #f8f9fa; border: solid 2px #dee2e6;
         border-radius: 0.25rem; padding: 0.5rem;}
 
-
+/* table */
+.table{
+  width:100%;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  text-align: justify;
+  border-spacing: 0;
+}
+.table thead th{
+    background-color: #f8f9fa; 
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    /* border-top: solid 2px #dee2e6; */
+    /* border-bottom: solid 2px #dee2e6; */
+    color: #6c757d;
+}
+.table thead th:first-child{
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    /* border-left: solid 2px #dee2e6; */
+}
+.table thead th:last-child{
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    /* border-right: solid 2px #dee2e6; */
+}
+.table tbody th{
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    color: #212529;
+    text-justify: center;
+}
