@@ -5,14 +5,14 @@ const fileInput = document.querySelector('#fileInput')
 const uploadBtn = document.querySelector('#uploadBtn')
 
 // click add drop down button
-export function clickAddButton() {
+function clickAddBtn() {
     addDropDownButton.addEventListener('click', e => {
         addDropDownMenu.classList.toggle('show')
     })
 }
 
 // upload file from computer 기능 구현
-export function uploadFiles() {
+function uploadFiles() {
     addDropDownMenu.addEventListener('click', e => {
         const item = e.target.closest('.drop-down-list')
 
@@ -23,7 +23,7 @@ export function uploadFiles() {
 }
 
 // select file in file system
-export function selectFiles() {
+function selectFiles() {
 
     fileInput.addEventListener('change', e => {
     const selectedFiles = e.target.files
@@ -50,4 +50,11 @@ export function selectFiles() {
     addDropDownMenu.classList.remove('show')
 })
 
+}
+
+
+export function initAddDropBtn() {
+    clickAddBtn()
+    uploadFiles()
+    selectFiles()
 }

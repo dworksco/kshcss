@@ -4,7 +4,7 @@ const items = document.querySelectorAll('.search-item');
 const stars = document.querySelectorAll('.star')
 
 // Text Search Function
-export function searchByText() {
+function searchByText() {
 
     searchInput.addEventListener('input', (e) => {
         const filter = e.target.value.toLowerCase(); // 입력값을 소문자로 변환
@@ -25,7 +25,7 @@ export function searchByText() {
 
 
 // click 즐겨찾기 button 
-export function clickStarBtn() {
+function clickStarBtn() {
 
     stars.forEach(star => {
         star.addEventListener('click', (e) => {
@@ -39,3 +39,7 @@ export function clickStarBtn() {
 
 }
 
+export function initSearch() {
+    searchByText()
+    clickStarBtn()
+}

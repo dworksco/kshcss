@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="dashboard.css">
     <style>
         @import url(./libs/Cesium-1.138/Build/CesiumUnminified/Widgets/widgets.css);
-
+        /* 전체 */
         *,
         *::before,
         *::after {
@@ -68,6 +68,7 @@
             gap: 1rem;
         }
 
+        /* 헤더 제외 본문 */
         .main {
             width: 100dvw;
             height: 92dvh;
@@ -346,6 +347,7 @@
 
     </div>
 
+    <!-- Cesium -->
     <script type="module">
 
         const queryString = window.location.search;
@@ -399,8 +401,9 @@
 
     </script>
 
-    <script type="module" src="main.js"></script>
+    <!-- control -->
     <script src="./json_reader.js"></script>
+    <script type="module" src="main.js"></script>
 
 </body>
 

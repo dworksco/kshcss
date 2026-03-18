@@ -7,7 +7,7 @@ const modeDropDownMenu = modeDropDownContainer.querySelector('.drop-down-menu')
 const modeDropDownButtonIconPaths = modeDropDownButton.querySelectorAll('svg')[0].querySelectorAll('path')
 
 // ask/agent mode drop down button clicked
-export function clickModeButton() {
+function clickModeBtn() {
 
     modeDropDownButton.addEventListener('click', e => {
         modeDropDownMenu.classList.toggle('show')
@@ -16,7 +16,7 @@ export function clickModeButton() {
 }
 
 // click drop down list
-export function clickModeMenu() {
+function clickModeMenu() {
 
     modeDropDownMenu.addEventListener('click', e => {
         const item = e.target.closest('.drop-down-list')
@@ -43,4 +43,9 @@ export function clickModeMenu() {
         modeDropDownMenu.classList.remove('show')
     })
 
+}
+
+export function initDropDown() {
+    clickModeBtn()
+    clickModeMenu()
 }

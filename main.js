@@ -1,22 +1,18 @@
-import { clickModeButton, clickModeMenu } from "./dropDown.js";
-import { clickAddButton, uploadFiles, selectFiles } from "./addDropDown.js";
-import { searchByText, clickStarBtn } from "./searchInput.js";
-import { setInitialWidgetPosition, clickWidgetToggleBtn, dragWidget, clickCloseBtn } from "./widget.js";
+import { initDropDown } from "./dropDown.js";
+import { initAddDropBtn } from "./addDropDown.js";
+import { initSearch } from "./searchInput.js";
+import { setInitialWidgetPosition, initWidget } from "./widget.js";
 
-clickModeButton()
-clickModeMenu()
 
-clickAddButton()
-uploadFiles()
-selectFiles()
+window.addEventListener('DOMContentLoaded', () => {
+    
+    // 창 변경사항에 따라 초기위치 설정
+    window.addEventListener('load', setInitialWidgetPosition);
+    // window.addEventListener('resize', setInitialWidgetPosition);
 
-searchByText()
-clickStarBtn()
+    initSearch()
+    initDropDown()
+    initAddDropBtn()
+    initWidget()
 
-// 창 변경사항에 따라 초기위치 설정
-window.addEventListener('load', setInitialWidgetPosition);
-// window.addEventListener('resize', setInitialWidgetPosition);
-
-clickCloseBtn()
-clickWidgetToggleBtn()
-dragWidget()
+})

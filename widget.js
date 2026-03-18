@@ -21,7 +21,7 @@ export function setInitialWidgetPosition() {
 }
 
 // click widget toggle btn
-export function clickWidgetToggleBtn() {
+function clickWidgetToggleBtn() {
 
     widgetToggleBtn.forEach(btn => {
         btn.addEventListener('click', e => {
@@ -39,7 +39,7 @@ export function clickWidgetToggleBtn() {
 }
 
 // drag widget
-export function dragWidget() {
+function dragWidget() {
 
     widgetHeader.addEventListener('mousedown', e => {
         // 닫기 버튼을 눌렀을 때는 드래그 X
@@ -79,7 +79,7 @@ export function dragWidget() {
 }
 
 // click close button
-export function clickCloseBtn() {
+function clickCloseBtn() {
 
     closeBtn.forEach(btn => {
         btn.addEventListener('click', e => {
@@ -96,4 +96,9 @@ export function clickCloseBtn() {
 
 }
 
+export function initWidget() {
+    clickCloseBtn()
+    clickWidgetToggleBtn()
+    dragWidget()
+}
 
