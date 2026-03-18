@@ -5,21 +5,27 @@ const fileInput = document.querySelector('#fileInput')
 const uploadBtn = document.querySelector('#uploadBtn')
 
 // click add drop down button
-addDropDownButton.addEventListener('click', e => {
-    addDropDownMenu.classList.toggle('show')
-})
+export function clickAddButton() {
+    addDropDownButton.addEventListener('click', e => {
+        addDropDownMenu.classList.toggle('show')
+    })
+}
 
 // upload file from computer 기능 구현
-addDropDownMenu.addEventListener('click', e => {
-    const item = e.target.closest('.drop-down-list')
+export function uploadFiles() {
+    addDropDownMenu.addEventListener('click', e => {
+        const item = e.target.closest('.drop-down-list')
 
-    if (item === uploadBtn) {
-        fileInput.click();
-    }
-})
+        if (item === uploadBtn) {
+            fileInput.click();
+        }
+    })
+}
 
 // select file in file system
-fileInput.addEventListener('change', e => {
+export function selectFiles() {
+
+    fileInput.addEventListener('change', e => {
     const selectedFiles = e.target.files
     Array.from(selectedFiles).forEach(file => {
 
@@ -43,3 +49,5 @@ fileInput.addEventListener('change', e => {
     // 2.fold drop down button Menu
     addDropDownMenu.classList.remove('show')
 })
+
+}

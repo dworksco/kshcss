@@ -11,7 +11,7 @@ const widgetPanel = document.querySelector('.widget-panel')
 const closeBtn = document.querySelectorAll('.btn-close')
 
 // widget 초기 위치 설정
-function setInitialWidgetPosition() {
+export function setInitialWidgetPosition() {
     const rect = map.getBoundingClientRect();
 
     widget.forEach(widget => {
@@ -20,72 +20,80 @@ function setInitialWidgetPosition() {
     })
 }
 
-// 창 변경사항에 따라 초기위치 설정
-window.addEventListener('load', setInitialWidgetPosition);
-// window.addEventListener('resize', setInitialWidgetPosition);
-
 // click widget toggle btn
-widgetToggleBtn.forEach(btn => {
-    btn.addEventListener('click', e => {
-        const toggle = e.currentTarget.closest('.overlay')
-        const widget = toggle.previousElementSibling
+export function clickWidgetToggleBtn() {
 
-        toggle.classList.remove('visible')
-        toggle.classList.add('hidden')
+    widgetToggleBtn.forEach(btn => {
+        btn.addEventListener('click', e => {
+            const toggle = e.currentTarget.closest('.overlay')
+            const widget = toggle.previousElementSibling
 
-        widget.classList.remove('hidden')
-        widget.classList.add('visible')
+            toggle.classList.remove('visible')
+            toggle.classList.add('hidden')
+
+            widget.classList.remove('hidden')
+            widget.classList.add('visible')
+        })
     })
-})
+
+}
 
 // drag widget
-widgetHeader.addEventListener('mousedown', e => {
-    // 닫기 버튼을 눌렀을 때는 드래그 X
-    if (e.target.closest('.btn-close')) return;
+export function dragWidget() {
 
-    isDragging = true;
+    widgetHeader.addEventListener('mousedown', e => {
+        // 닫기 버튼을 눌렀을 때는 드래그 X
+        if (e.target.closest('.btn-close')) return;
 
-    const rect = widgetPanel.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+        isDragging = true;
 
-    document.body.style.userSelect = 'none';
-})
+        const rect = widgetPanel.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
 
-document.addEventListener('mousemove', e => {
-    if (!isDragging) return;
+        document.body.style.userSelect = 'none';
+    })
 
-    let newLeft = e.clientX - offsetX;
-    let newTop = e.clientY - offsetY;
+    document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
 
-    // 화면 밖으로 너무 나가지 않게 제한
-    const maxLeft = window.innerWidth - widgetPanel.offsetWidth;
-    const maxTop = window.innerHeight - widgetPanel.offsetHeight;
+        let newLeft = e.clientX - offsetX;
+        let newTop = e.clientY - offsetY;
 
-    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-    newTop = Math.max(0, Math.min(newTop, maxTop));
+        // 화면 밖으로 너무 나가지 않게 제한
+        const maxLeft = window.innerWidth - widgetPanel.offsetWidth;
+        const maxTop = window.innerHeight - widgetPanel.offsetHeight;
 
-    widgetPanel.style.left = `${newLeft}px`
-    widgetPanel.style.top = `${newTop}px`
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
 
-})
-
-document.addEventListener('mouseup', e => {
-    isDragging = false;
-    document.body.style.userSelect = '';
-})
-
-// click close button
-closeBtn.forEach(btn => {
-    btn.addEventListener('click', e => {
-        const widget = e.currentTarget.closest('.overlay')
-        const widgetToggleBtn = document.querySelector('.widget-toggle-btn')
-        widget.classList.remove('visible');
-        widget.classList.add('hidden');
-
-        widgetToggleBtn.classList.remove('hidden');
-        widgetToggleBtn.classList.add('visible');
+        widgetPanel.style.left = `${newLeft}px`
+        widgetPanel.style.top = `${newTop}px`
 
     })
-});
+
+    document.addEventListener('mouseup', e => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+    })
+}
+
+// click close button
+export function clickCloseBtn() {
+
+    closeBtn.forEach(btn => {
+        btn.addEventListener('click', e => {
+            const widget = e.currentTarget.closest('.overlay')
+            const widgetToggleBtn = document.querySelector('.widget-toggle-btn')
+            widget.classList.remove('visible');
+            widget.classList.add('hidden');
+
+            widgetToggleBtn.classList.remove('hidden');
+            widgetToggleBtn.classList.add('visible');
+
+        })
+    });
+
+}
+
 
