@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="dashboard.css">
     <style>
         @import url(./libs/Cesium-1.138/Build/CesiumUnminified/Widgets/widgets.css);
+
         /* 전체 */
         *,
         *::before,
@@ -31,10 +32,18 @@
             overflow: hidden;
         }
 
+        body {
+            display: grid;
+            grid-template-rows: 8dvh 1fr;
+            grid-template-columns: 40dvw 1fr;
+            grid-template-areas:
+                "header header"
+                "sidebar content"
+        }
+
         /* 헤더 */
         .header {
-            width: 100dvw;
-            height: 8dvh;
+            grid-area: header;
             background-color: #f8f9fa;
             border: solid 2px #dee2e6;
         }
@@ -68,26 +77,18 @@
             gap: 1rem;
         }
 
-        /* 헤더 제외 본문 */
-        .main {
-            width: 100dvw;
-            height: 92dvh;
-            display: flex;
-        }
-
         /* 사이드바 */
         .sidebar {
-            width: 40dvw;
-            height: 100%;
+            grid-area: sidebar;
             padding: 1rem;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
 
         /* content */
         .content {
-            width: 60dvw;
-            height: 100%;
+            grid-area: content;
         }
 
         /* 지도 */
@@ -151,8 +152,7 @@
 
     </div>
 
-    <!-- main -->
-    <div class="main">
+
         <div class="sidebar">
             <!-- Text search -->
             <div class="text-bold mb-2">Search</div>
@@ -345,7 +345,6 @@
             </div>
         </div>
 
-    </div>
 
     <!-- Cesium -->
     <script type="module">
