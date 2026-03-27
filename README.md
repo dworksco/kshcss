@@ -1,4 +1,5 @@
 📁 프로젝트 구조
+```
 ├── index.html          # 진입점 — 전체 레이아웃 및 CesiumJS 초기화
 ├── main.js             # 모듈 초기화 (DOMContentLoaded 진입점)
 │
@@ -9,8 +10,10 @@
 │
 ├── style.css           # 유틸리티 클래스 (Flex, spacing, button 등)
 └── dashboard.css       # 컴포넌트 스타일 (드롭다운, 타임라인, 위젯)
+```
 
 🧩 레이아웃 구조
+```
 body (CSS Grid)
 ├── header                  ─ 상단 전체
 │   ├── header-left         로고, 햄버거 메뉴
@@ -25,3 +28,4 @@ body (CSS Grid)
 └── content                 ─ 우측 지도 영역 (1fr)
     ├── #cesiumContainer    CesiumJS 3D 지도
     └── .overlay            드래그 가능한 위젯 패널
+```
