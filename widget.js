@@ -15,7 +15,7 @@ export function setInitialWidgetPosition() {
     const rect = map.getBoundingClientRect();
 
     widget.forEach(widget => {
-        widget.style.top = `${rect.top + 32}px`;
+        widget.style.top = `${rect.top + 50}px`;
         widget.style.left = `${rect.left + 16}px`;
     })
 }

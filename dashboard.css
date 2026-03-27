@@ -114,8 +114,8 @@
 
 .overlay {
     position: fixed;
-    width: 30rem;
-    min-width: 30rem;
+    width: 30rem-16px;
+    min-width: 30rem-16px;
     height: 25rem;
     z-index: 10000;
 }
