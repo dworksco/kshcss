@@ -1,7 +1,7 @@
-import { initDropDown } from "./dropDown.js";
-import { initAddDropBtn } from "./addDropDown.js";
-import { initSearch } from "./searchInput.js";
-import { setInitialWidgetPosition, initWidget } from "./widget.js";
+import { initDropDown } from "./script/dropDown.js";
+import { initAddDropBtn } from "./script/addDropDown.js";
+import { initSearch } from "./script/searchInput.js";
+import { setInitialWidgetPosition, initWidget } from "./script/widget.js";
 
 
 window.addEventListener('DOMContentLoaded', () => {
