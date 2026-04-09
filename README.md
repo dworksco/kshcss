@@ -1,15 +1,22 @@
 📁 프로젝트 구조
-```
+```text
 ├── index.html          # 진입점 — 전체 레이아웃 및 CesiumJS 초기화
 ├── main.js             # 모듈 초기화 (DOMContentLoaded 진입점)
+├── data.json           # 데이터 저장 파일
+├── json_reader.js      # JSON 데이터 로드 유틸리티
 │
-├── dropDown.js         # 모드 선택 드롭다운 (Ask / Agent 전환)
-├── addDropDown.js      # 파일 추가 드롭다운 (파일 업로드 / 파일시스템)
-├── searchInput.js      # 텍스트 검색 + 즐겨찾기(star) 기능
-├── widget.js           # 위젯 패널 드래그 이동 / 열기·닫기
+├── script/             # UI 로직 (모듈)
+│   ├── dropDown.js     # 모드 선택 드롭다운 (Ask / Agent 전환)
+│   ├── addDropDown.js  # 파일 추가 드롭다운 (파일 업로드 / 파일시스템)
+│   ├── searchInput.js  # 텍스트 검색 + 즐겨찾기(star) 기능
+│   └── widget.js       # 위젯 패널 드래그 이동 / 열기·닫기
 │
-├── style.css           # 유틸리티 클래스 (Flex, spacing, button 등)
-└── dashboard.css       # 컴포넌트 스타일 (드롭다운, 타임라인, 위젯)
+├── css/                # 스타일시트
+│   ├── style.css       # 유틸리티 클래스 (Flex, spacing, button 등)
+│   └── dashboard.css   # 컴포넌트 스타일 (드롭다운, 타임라인, 위젯)
+│
+└── libs/               # 외부 라이브러리
+    └── Cesium-1.138/   # CesiumJS 라이브러리
 ```
 
 🧩 레이아웃 구조
