@@ -3,29 +3,56 @@
 <head></head>
 
 <body>
+
     <script>
         // tableStart → 시작 단수, tableEnd → 끝 단수
         function timesTable(tableStart, tableEnd) {
 
-            for (let table = tableStart; table <= tableEnd; table++) {
+            // rowTotal → 한 행에 배치할 단 갯수
+            let rowTotal = 4;
 
-                console.log(`[${table}단]`)
+            // rowN → 몇번째 행
+            for (let rowN = tableStart; rowN <= tableEnd; rowN += rowTotal) {
 
-                for (let i = 1; i < 10; i++) {
+                let header = ""
+                let main = ""
 
-                    // 마지막 단수 길이에 맞춰 공백 생성
-                    const t = String(table).padStart(String(tableEnd).length, ' ');
+                // header
+                for (let table = rowN; table < rowN + rowTotal; table++) {
 
-                    // 단*9의 결과 길이에 맞춰 공백 생성
-                    const result = String(table * i).padStart(String(table * 9).length, ' ');
-
-                    console.log(`${t} X ${i} = ${result}`)
+                    if (table <= tableEnd) {
+                        // 단 하나에 최대길이 20 (한글 반영해서 header는 19)
+                        header += `[ ${table}단 ]`.padEnd(19)
+                    }
 
                 }
 
-                // 단과 단사이의 공백
-                console.log(`\n`)
-            };
+                // main(구구단 부분)
+                for (let i = 1; i < 10; i++) {
+                    for (let table = rowN; table < rowN + rowTotal; table++) {
+                        if (table <= tableEnd) {
+
+                            // 마지막 단수 길이에 맞춰 공백 생성
+                            const t = String(table).padStart(String(tableEnd).length);
+
+                            // 최대 결과 길이에 맞춰 공백 생성
+                            const result = String(table * i).padStart(String(tableEnd * 9).length);
+
+                            main += `${t} X ${i} = ${result}`.padEnd(20);
+
+                        }
+                    }
+                    main += "\n"
+                }
+
+
+                console.log(header);
+                console.log(main)
+                console.log("\n\n")
+                
+
+
+            }
 
         }
 
