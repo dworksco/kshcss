@@ -3,14 +3,17 @@ function timesTable( tableStart, tableEnd ){
     
     for( let table = tableStart; table <= tableEnd; table++ ) {
     
-        console.log(`${table}단`)
+        console.log(`[${table}단]`)
     
         for(let i = 1; i < 10; i++){
     
             // 마지막 단수 길이에 맞춰 공백 생성
             const t = String(table).padStart(String(tableEnd).length, ' ');
+
+            // 단*9의 결과 길이에 맞춰 공백 생성
+            const result = String(table*i).padStart(String(table*9).length,' ');
     
-            console.log(`${t} X ${i} = ${table*i}`)
+            console.log(`${t} X ${i} = ${result}`)
     
         }
     
@@ -21,6 +24,6 @@ function timesTable( tableStart, tableEnd ){
 }
 
 
-timesTable(99, 100)
+timesTable(1, 9)
 
 
