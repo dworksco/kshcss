@@ -1,0 +1,31 @@
+<html>
+
+<head></head>
+
+<body>
+    <script>
+        
+        // row → 줄 수
+        makeStar(10);
+
+        function makeStar(row){
+
+            // 마지막 줄 수 * 갯수
+            const endRowStarN = 2*(row-1)+1
+    
+            // i → 줄마다 들어가는 * 갯수(2*i+1의 수열을 가짐)
+            for(let i=1; i < 2*row + 1; i+=2){
+                
+                let star = "";
+    
+                star += star.padStart(i,'*')
+                            .padStart((endRowStarN-i)/2 + i); // 필요한 공백 길이((endRowStarN-i)/2) + 별 갯수(i) 길이 만큼 공백 채우기 
+    
+                console.log(star)
+            }
+        }
+
+    </script>
+</body>
+
+</html>
