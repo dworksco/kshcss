@@ -30,6 +30,16 @@
             starBox.forEach(star => {
                 console.log(star)
             });
+
+            // 마지막 줄 ~ 첫번째 줄
+            let index = starBox.length - 1 // 마지막 줄 번호
+
+            while(index > 0){
+                
+                console.log(starBox[index-1]) // 마지막 줄 중복 작성 X
+                index -= 1
+
+            }
         }
 
     </script>
