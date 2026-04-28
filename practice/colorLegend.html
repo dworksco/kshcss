@@ -3,27 +3,139 @@
 <head>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .linearGradient {
-            width: 50px;
-            height: 300px;
-            background: linear-gradient(red,yellow,green,blue);
+        /* 데이터를 표시할 스타일 추가 */
+        #feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-content: flex-start;
+            max-width: 400px;
         }
+
+        .feature-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* canvas layer */
+        /* .canvasGrad {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .canvasMark {
+            position: absolute;
+            top: 0;
+            left: 0;
+        } */
     </style>
 </head>
-
 <body>
-    <div class="d-flex g-2">
+    <div class="d-flex g-2 canvasGrad" style="height: 110px;">
         <div class="linearGradient">
 
         </div>
 
-        <div class="d-flex flex-column justify-content-between">
-            <div>1</div>
+        <div class="d-flex flex-column justify-content-between" style="padding: 5px 0;">
+            <div>0</div>
             <div>100</div>
         </div>
 
+        <!-- 데이터가 뿌려질 컨테이너 -->
+        <div id="feature-list" class="ms-4"></div>
+
     </div>
-    <script>
+
+
+    <script type="module">
+        const legend = document.querySelector('.linearGradient')
+
+        // 표시 canvas
+        const canvasMark = document.createElement('canvas')
+        canvasMark.width = 10;
+        canvasMark.height = 110;
+        canvasMark.classList.add('canvasMark')
+        const ctxMark = canvasMark.getContext('2d')
+        legend.appendChild(canvasMark)
+
+        // 그라데이션 canvas
+        const canvasGrad = document.createElement('canvas');
+        canvasGrad.width = 30;
+        canvasGrad.height = 110;
+        const ctxGrad = canvasGrad.getContext('2d');
+        legend.appendChild(canvasGrad)
+
+
+
+        // 1. 그라데이션에서 색상을 추출하는 함수
+        function getGradientColor(percent) {
+
+            const grad = ctxGrad.createLinearGradient(0, 5, 0, 105);
+            grad.addColorStop(0, 'red');
+            grad.addColorStop(0.33, 'yellow');
+            grad.addColorStop(0.66, 'green');
+            grad.addColorStop(1, 'blue');
+
+            ctxGrad.fillStyle = grad;
+            ctxGrad.fillRect(0, 5, 30, 100);
+
+            const y = Math.max(5, Math.min(104, Math.round(percent * 100) + 5));
+            const pixel = ctxGrad.getImageData(0, y, 1, 1).data;
+            return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        }
+
+        // 2. 데이터 생성 (0~100 사이의 랜덤 숫자 30개)
+        let features = [];
+        for (let i = 0; i < 30; i++) {
+            features.push(Math.round(Math.random() * 100));
+        }
+
+        // 3. 화면에 출력
+        const container = document.getElementById('feature-list');
+
+        features.forEach(val => {
+            const div = document.createElement('div');
+            div.className = 'feature-item';
+            div.textContent = val;
+
+            // 값(0~100)을 0~1 범위로 변환하여 색상 적용
+            div.style.backgroundColor = getGradientColor(val / 100);
+
+            container.appendChild(div);
+        });
+
+        // 4. 선택한 feature의 범례 위치 알려주기
+        document.addEventListener('click', e => {
+            const choice = e.target.closest('.feature-item');
+            if (!choice) return;
+
+            // 이전 마커를 지우고 새로 그립니다.
+            ctxMark.clearRect(0, 0, canvasMark.width, canvasMark.height);
+            drawMark(choice);
+        });
+
+        function drawMark(choice) {
+            const y = Number(choice.textContent) + 5;
+            const size = 5; // 삼각형 크기 절반
+
+            ctxMark.fillStyle = 'black';
+            ctxMark.beginPath();
+
+            // 마커 → ▶
+            ctxMark.moveTo(0, y - size);                 // 왼쪽 위
+            ctxMark.lineTo(0, y + size);                 // 왼쪽 아래
+            ctxMark.lineTo(canvasMark.width, y);         // 오른쪽 끝 꼭지점
+            ctxMark.fill();
+        }
     </script>
 </body>
 
