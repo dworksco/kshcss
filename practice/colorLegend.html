@@ -24,10 +24,24 @@
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
+
+        .linearGradient {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .canvasGrad {
+            order: 2; /* 그라데이션을 두 번째(오른쪽)로 배치 */
+        }
+
+        .canvasMark {
+            order: 1; /* 마커를 첫 번째(왼쪽)로 배치 */
+        }
     </style>
 </head>
+
 <body>
-    <div class="d-flex g-2 canvasGrad" style="height: 110px;">
+    <div class="d-flex g-2" style="height: 110px;">
         <div class="linearGradient">
 
         </div>
@@ -43,85 +57,23 @@
     </div>
 
 
+    <script src="/script/colorLegend.js"></script>
     <script type="module">
-        const legend = document.querySelector('.linearGradient')
+        let colors = ['red', 'yellow', 'green', 'blue']
 
-        // 표시 canvas
-        const canvasMark = document.createElement('canvas')
-        canvasMark.width = 10;
-        canvasMark.height = 110;
-        canvasMark.classList.add('canvasMark')
-        const ctxMark = canvasMark.getContext('2d')
-        legend.appendChild(canvasMark)
+        // 이제 실행 순서가 바뀌어도 CSS의 'order' 속성 덕분에 
+        // 마커는 항상 왼쪽, 그라데이션은 항상 오른쪽에 위치합니다.
+        const ctxGrad = createGradientColor(colors)
+        showMark()
 
-        // 그라데이션 canvas
-        const canvasGrad = document.createElement('canvas');
-        canvasGrad.width = 30;
-        canvasGrad.height = 110;
-        const ctxGrad = canvasGrad.getContext('2d');
-        legend.appendChild(canvasGrad)
-
-
-
-        // 1. 그라데이션에서 색상을 추출하는 함수
-        function getGradientColor(percent) {
-
-            const grad = ctxGrad.createLinearGradient(0, 5, 0, 105);
-            grad.addColorStop(0, 'red');
-            grad.addColorStop(0.33, 'yellow');
-            grad.addColorStop(0.66, 'green');
-            grad.addColorStop(1, 'blue');
-
-            ctxGrad.fillStyle = grad;
-            ctxGrad.fillRect(0, 5, 30, 100);
-
-            const y = Math.max(5, Math.min(104, percent + 5));
-            const pixel = ctxGrad.getImageData(0, y, 1, 1).data;
-            return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-        }
-
-        // 2. 데이터 생성 (0~100 사이의 랜덤 숫자 30개)
+        // 데이터 생성 (0~100 사이의 랜덤 숫자 30개)
         let features = [];
         for (let i = 0; i < 30; i++) {
             features.push(Math.round(Math.random() * 100));
         }
 
-        // 3. 화면에 출력
-        const container = document.getElementById('feature-list');
-
-        features.forEach(val => {
-            const div = document.createElement('div');
-            div.className = 'feature-item';
-            div.textContent = val;
-
-            div.style.backgroundColor = getGradientColor(val);
-
-            container.appendChild(div);
-        });
-
-        // 4. 선택한 feature의 범례 위치 알려주기
-        document.addEventListener('click', e => {
-            const choice = e.target.closest('.feature-item');
-            if (!choice) return;
-
-            // 이전 마커를 지우고 새로 그립니다.
-            ctxMark.clearRect(0, 0, canvasMark.width, canvasMark.height);
-            drawMark(choice);
-        });
-
-        function drawMark(choice) {
-            const y = Number(choice.textContent) + 5;
-            const size = 5; // 삼각형 크기 절반
-
-            ctxMark.fillStyle = 'black';
-            ctxMark.beginPath();
-
-            // 마커 → ▶
-            ctxMark.moveTo(0, y - size);                 // 왼쪽 위
-            ctxMark.lineTo(0, y + size);                 // 왼쪽 아래
-            ctxMark.lineTo(canvasMark.width, y);         // 오른쪽 끝 꼭지점
-            ctxMark.fill();
-        }
+        // 데이터 표출하기
+        showFeatures(features, ctxGrad)
     </script>
 </body>
 
