@@ -42,6 +42,10 @@
 
 <body>
     <div class="d-flex g-2" style="height: 110px;">
+        
+        <!-- 데이터가 뿌려질 컨테이너 -->
+        <div id="feature-list" class="ms-4"></div>
+        
         <div class="linearGradient">
 
         </div>
@@ -50,20 +54,15 @@
             <div>0</div>
             <div>100</div>
         </div>
-
-        <!-- 데이터가 뿌려질 컨테이너 -->
-        <div id="feature-list" class="ms-4"></div>
-
     </div>
 
 
     <script src="/script/colorLegend.js"></script>
     <script type="module">
-        let colors = ['red', 'yellow', 'green', 'blue']
 
-        // 이제 실행 순서가 바뀌어도 CSS의 'order' 속성 덕분에 
-        // 마커는 항상 왼쪽, 그라데이션은 항상 오른쪽에 위치합니다.
-        const ctxGrad = createGradientColor(colors)
+        // 범례 생성
+        const ctxGrad = createGradientColor('#f92a82', '#ed7b84', '#d6d5b3', '#7eb77f')
+        // 범례 위치 마커 생성
         showMark()
 
         // 데이터 생성 (0~100 사이의 랜덤 숫자 30개)

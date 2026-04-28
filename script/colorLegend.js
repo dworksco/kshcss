@@ -1,5 +1,5 @@
 // 그라데이션 범례 만들기
-function createGradientColor(colors) {
+function createGradientColor(...colors) {
     const legend = document.querySelector('.linearGradient')
 
     const canvasGrad = document.createElement('canvas');
