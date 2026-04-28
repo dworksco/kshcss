@@ -68,8 +68,8 @@ function showMark() {
         // 이전 마커를 지우고 새로 그립니다.
         ctxMark.clearRect(0, 0, canvasMark.width, canvasMark.height);
 
-        const y = Number(choice.textContent) + 5;
-        const size = 5; // 삼각형 크기 절반
+        const size = canvasMark.width / 2; // 삼각형 크기 절반
+        const y = Number(choice.textContent) + size;
 
         ctxMark.fillStyle = 'black';
         ctxMark.beginPath();
