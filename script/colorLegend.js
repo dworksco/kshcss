@@ -1,5 +1,5 @@
 // 그라데이션 범례 만들기
-function createGradientColor(width, height, ...colors) {
+function createGradientColor(min, max, width, height, ...colors) {
     const legend = document.querySelector('.linearGradient')
 
     const canvasGrad = document.createElement('canvas');
@@ -12,6 +12,7 @@ function createGradientColor(width, height, ...colors) {
 
     const grad = ctxGrad.createLinearGradient(0, offset, 0, height + offset);
 
+    // 중단점 생성
     colors.forEach((color, index) => {
         grad.addColorStop(index * (1 / (colors.length - 1)), color)
     });
@@ -19,7 +20,22 @@ function createGradientColor(width, height, ...colors) {
     ctxGrad.fillStyle = grad;
     ctxGrad.fillRect(0, offset, width, height);
 
-    return ctxGrad; // 캔버스 컨텍스트를 반환하여 외부에서 사용 가능하게 함
+    // 범례 라벨 생성
+    const labelContainer = document.createElement('div')
+    labelContainer.classList.add('legendLabel')
+    labelContainer.style.height = height + offset * 2;
+
+    // 라벨 텍스트 생성
+    const labelMin = document.createElement('div')
+    labelMin.textContent = min;
+    const labelMax = document.createElement('div')
+    labelMax.textContent = max;
+
+    labelContainer.appendChild(labelMin)
+    labelContainer.appendChild(labelMax)
+    legend.appendChild(labelContainer)
+
+
 }
 
 // 그라데이션에서 색상을 추출하는 함수
@@ -101,12 +117,14 @@ function showMark() {
 window.addEventListener('DOMContentLoaded', () => {
     const legends = document.querySelectorAll('.linearGradient');
     legends.forEach(el => {
+        const min = el.dataset.min || 0;
+        const max = el.dataset.max || 100;
         const width = parseInt(el.dataset.width) || 30;
         const height = parseInt(el.dataset.height) || 100;
         const colors = el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'];
         
         // 범례 생성
-        createGradientColor(width, height, ...colors);
+        createGradientColor(min, max, width, height, ...colors);
         
         // data-mark="true" 설정이 있으면 마커 기능도 활성화
         if (el.dataset.mark === 'true') {

@@ -37,29 +37,35 @@
         .canvasMark {
             order: 1; /* 마커를 첫 번째(왼쪽)로 배치 */
         }
+
+        .legendLabel{
+            order: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: small;
+            margin-left: 3px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="d-flex g-2" style="height: 110px;">
+    <div class="d-flex g-2">
         
         <!-- 데이터가 뿌려질 컨테이너 -->
         <div id="feature-list" class="ms-4"></div>
         
         <div id="legend_air"
              class="linearGradient"
+                    data-min="0"
+                    data-max="100"
                     data-width="10"
                     data-height="120"
                     data-colors="#f92a82, #ed7b84, #d6d5b3, #7eb77f"
                     data-mark="true">
         </div>
 
-        <div class="d-flex flex-column justify-content-between" style="padding: 5px 0;">
-            <div>0</div>
-            <div>100</div>
-        </div> 
-
-    </div>
+    </div>        
 
 
     <script src="/script/colorLegend.js"></script>
