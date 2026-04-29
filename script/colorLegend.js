@@ -25,7 +25,9 @@ function createGradientColor(...colors) {
 // 그라데이션에서 색상을 추출하는 함수
 function getGradientColor(percent, ctxGrad) {
 
-    const y = Math.max(5, Math.min(104, percent + 5));
+    const offset = 5; // 삼각형 크기 절반 (마커가 범위를 벗어날 가능성 예방)
+
+    const y = Math.max(offset, Math.min(99 + offset, percent + offset)); // 0, 100에 지정되어서 투명 값이 나오는 것을 방지
     const pixel = ctxGrad.getImageData(0, y, 1, 1).data;
     return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 
