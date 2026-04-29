@@ -19,8 +19,7 @@ function createGradientColor(width, height, ...colors) {
     ctxGrad.fillStyle = grad;
     ctxGrad.fillRect(0, offset, width, height);
 
-    return ctxGrad;
-
+    return ctxGrad; // 캔버스 컨텍스트를 반환하여 외부에서 사용 가능하게 함
 }
 
 // 그라데이션에서 색상을 추출하는 함수
@@ -29,13 +28,13 @@ function getGradientColor(percent, ctxGrad) {
     const offset = 5; // 삼각형 크기 절반
     const canvasHeight = ctxGrad.canvas.height;
     const legendHeight = canvasHeight - offset * 2; // 실제 색상이 그려진 영역의 높이
-    
+
     // percent(0~100)를 실제 픽셀 좌표(0~legendHeight)로 변환
     const scaledY = percent * (legendHeight / 100);
 
     // offset을 더해 실제 캔버스 상의 y좌표를 계산하고, 범위를 제한함 (투명 영역 방지)
     const y = Math.max(offset, Math.min(canvasHeight - offset - 1, scaledY + offset));
-    
+
     const pixel = ctxGrad.getImageData(0, y, 1, 1).data;
     return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 
@@ -97,3 +96,21 @@ function showMark() {
         ctxMark.fill();
     });
 }
+
+// HTML의 data-* 속성을 읽어 자동으로 범례를 생성하는 로직
+window.addEventListener('DOMContentLoaded', () => {
+    const legends = document.querySelectorAll('.linearGradient');
+    legends.forEach(el => {
+        const width = parseInt(el.dataset.width) || 30;
+        const height = parseInt(el.dataset.height) || 100;
+        const colors = el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'];
+        
+        // 범례 생성
+        createGradientColor(width, height, ...colors);
+        
+        // data-mark="true" 설정이 있으면 마커 기능도 활성화
+        if (el.dataset.mark === 'true') {
+            showMark();
+        }
+    });
+});
