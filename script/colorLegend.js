@@ -79,23 +79,17 @@ class ColorLegend {
         this.ctxMark = this.canvasMark.getContext('2d');
         this.el.appendChild(this.canvasMark);
 
-        // 이벤트 리스너 등록
-        document.addEventListener('click', (e) => {
-            const item = e.target.closest('.feature-item');
-            if (!item || item.dataset.targetLegend !== this.el.id) return;
 
-            this.updateMarker(parseFloat(item.textContent));
-        });
     }
 
     // 수치에 해당하는 색상 추출 (캔버스 활용)
     getColor(value) {
         const { min, max, height, offset } = this.config;
-        
+
         // 범위를 0~100으로 정규화
         const percent = ((value - min) / (max - min)) * 100;
         const scaledY = (percent * (height / 100)) + offset;
-        
+
         // 캔버스 범위 내로 y좌표 제한
         const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, scaledY));
 
@@ -146,6 +140,17 @@ window.addEventListener('DOMContentLoaded', () => {
         if (el.id) {
             window.colorLegends[el.id] = new ColorLegend(el);
         }
+    });
+
+    // 이벤트 리스너 등록
+    document.addEventListener('click', (e) => {
+        const item = e.target.closest('.feature-item');
+        if (!item) return;
+
+        const targetId = item.dataset.targetLegend;
+        const instance = window.colorLegends[targetId]
+
+        instance.updateMarker(parseFloat(item.textContent));
     });
 });
 
