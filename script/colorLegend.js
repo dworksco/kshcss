@@ -96,7 +96,7 @@ function showMark(el) {
         if (!choice) return;
         console.log(choice.dataset.targetLegend)
 
-        if(choice.dataset.targetLegend !== el.id) return;
+        if(choice.dataset.targetLegend !== el.id) return; // 클릭이벤트가 속한 범례와 showMark가 진행되는 범례가 동일한지 체크
 
         // 이전 마커를 지우고 새로 그립니다.
         ctxMark.clearRect(0, 0, canvasMark.width, canvasMark.height);
