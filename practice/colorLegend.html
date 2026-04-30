@@ -4,6 +4,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/colorLegend.css">
     <style>
+        @font-face {
+            font-family: 'Pretendard';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2') format('woff2');
+            font-display: swap;
+        }
+
         /* 전체 */
         *,
         *::before,
@@ -38,10 +44,9 @@
             align-items: center;
             justify-content: center;
             border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            font-family: 'GMarketSans';
+            font-weight: 500;
+            font-size: small;
         }
     </style>
 </head>
@@ -52,8 +57,8 @@
         <!-- 데이터가 뿌려질 컨테이너 -->
         <div id="airContainer" class="feature-list"></div>
 
-        <div id="legend_air" class="legendContainer" data-min="0" data-max="100" data-width="10" data-height="120"
-            data-colors="#f5f5f7,  #0066cc" data-mark="true">
+        <div id="legend_air" class="legendContainer" data-min="0" data-max="200" data-width="10" data-height="120"
+            data-colors="#fdf1f5, #ee8e46, #c46b23" data-mark="true">
         </div>
 
     </div>
