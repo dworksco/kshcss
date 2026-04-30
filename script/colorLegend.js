@@ -1,4 +1,5 @@
 // 그라데이션 범례 만들기
+// createGradientLegend(.legendContainer, 범례 최소값, 범례 최대값, 범례 넓이, 범례 높이, 범례 색상)
 function createGradientLegend(el, min, max, width, height, ...colors) {
 
     const canvasGrad = document.createElement('canvas');
@@ -38,6 +39,7 @@ function createGradientLegend(el, min, max, width, height, ...colors) {
 }
 
 // 그라데이션에서 색상을 추출하는 함수
+// getGradientColor(데이터 값, CanvasGrad의 context)
 function getGradientColor(percent, ctxGrad) {
 
     const offset = 5; // 삼각형 크기 절반
@@ -56,11 +58,11 @@ function getGradientColor(percent, ctxGrad) {
 }
 
 // 범례에 맞춰 화면에 출력
-function showFeatures(features, legend) {
+// showFeatures(데이터, 범례, 데이터 뿌릴 div)
+function showFeatures(features, legend, container) {
 
     const ctxGrad = legend.querySelector('.canvasGrad').getContext('2d')
 
-    const container = legend.previousElementSibling
 
     features.forEach(val => {
         const div = document.createElement('div');
@@ -94,7 +96,6 @@ function showMark(el) {
     document.addEventListener('click', e => {
         const choice = e.target.closest('.feature-item');
         if (!choice) return;
-        console.log(choice.dataset.targetLegend)
 
         if(choice.dataset.targetLegend !== el.id) return; // 클릭이벤트가 속한 범례와 showMark가 진행되는 범례가 동일한지 체크
 

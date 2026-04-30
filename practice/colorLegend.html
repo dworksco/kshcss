@@ -50,16 +50,16 @@
     <div class="d-flex g-2">
 
         <!-- 데이터가 뿌려질 컨테이너 -->
-        <div class="feature-list"></div>
+        <div id="airContainer" class="feature-list"></div>
 
         <div id="legend_air" class="legendContainer" data-min="0" data-max="100" data-width="10" data-height="120"
-            data-colors="#f92a82, #ed7b84, #d6d5b3, #7eb77f" data-mark="true">
+            data-colors="#f5f5f7,  #0066cc" data-mark="true">
         </div>
 
     </div>
 
     <div class="d-flex g-2">
-        <div class="feature-list"></div>
+        <div id="starContainer" class="feature-list"></div>
         <div id="legend_star" class="legendContainer" data-mark="true"></div>
     </div>
 
@@ -83,11 +83,13 @@
 
             // 데이터 표출하기 
             const legend_air = document.getElementById('legend_air')
-            showFeatures(air, legend_air)
+            const container_air = document.getElementById('airContainer')
+            showFeatures(air, legend_air, container_air)
 
             // 데이터 표출하기
             const legend_star = document.getElementById('legend_star')
-            showFeatures(star, legend_star)
+            const container_star = document.getElementById('starContainer')
+            showFeatures(star, legend_star, container_star)
 
 
         })
