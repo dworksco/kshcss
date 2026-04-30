@@ -1,14 +1,18 @@
 class ColorLegend {
     constructor(el) {
         this.el = el;
+
+        const labels = el.dataset.labels ? el.dataset.labels.split(',').map(label => label.trim()) : ['0', '100']
+
         // 1. 설정값 중앙 관리
         this.config = {
-            min: parseFloat(el.dataset.min) || 0,
-            max: parseFloat(el.dataset.max) || 100,
             width: parseInt(el.dataset.width) || 30,
             height: parseInt(el.dataset.height) || 100,
             colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
-            offset: 5 // 마커 및 여백 상수
+            offset: 5, // 마커 및 여백 상수     
+            labels: labels,
+            min: parseFloat(labels[0]),
+            max: parseFloat(labels[labels.length - 1])
         };
 
         // 2. 인스턴스 변수 초기화
@@ -52,19 +56,18 @@ class ColorLegend {
 
     // 라벨(Min/Max) 생성
     _createLabels() {
-        const { height, offset, min, max } = this.config;
+        const { height, offset, labels } = this.config;
 
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('legendLabel');
         labelContainer.style.height = `${height + offset * 2}px`;
 
-        const labelMin = document.createElement('div');
-        labelMin.textContent = min;
-        const labelMax = document.createElement('div');
-        labelMax.textContent = max;
+        labels.forEach( label => {
+            const labelEl = document.createElement('div');
+            labelEl.textContent = label;
+            labelContainer.appendChild(labelEl);
+        })
 
-        labelContainer.appendChild(labelMin);
-        labelContainer.appendChild(labelMax);
         this.el.appendChild(labelContainer);
     }
 
