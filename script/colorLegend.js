@@ -1,6 +1,5 @@
 // 그라데이션 범례 만들기
-function createGradientColor(min, max, width, height, ...colors) {
-    const legend = document.querySelector('.linearGradient')
+function createGradientLegend(el, min, max, width, height, ...colors) {
 
     const canvasGrad = document.createElement('canvas');
     const offset = 5; // 삼각형 크기 절반 (마커가 범위를 벗어날 가능성 예방)
@@ -8,7 +7,7 @@ function createGradientColor(min, max, width, height, ...colors) {
     canvasGrad.height = height + offset * 2;
     canvasGrad.classList.add('canvasGrad');
     const ctxGrad = canvasGrad.getContext('2d');
-    legend.appendChild(canvasGrad)
+    el.appendChild(canvasGrad)
 
     const grad = ctxGrad.createLinearGradient(0, offset, 0, height + offset);
 
@@ -33,7 +32,7 @@ function createGradientColor(min, max, width, height, ...colors) {
 
     labelContainer.appendChild(labelMin)
     labelContainer.appendChild(labelMax)
-    legend.appendChild(labelContainer)
+    el.appendChild(labelContainer)
 
 
 }
@@ -57,14 +56,19 @@ function getGradientColor(percent, ctxGrad) {
 }
 
 // 범례에 맞춰 화면에 출력
-function showFeatures(features, ctxGrad) {
+function showFeatures(features, legend) {
 
-    const container = document.getElementById('feature-list');
+    const ctxGrad = legend.querySelector('.canvasGrad').getContext('2d')
+
+    const container = legend.previousElementSibling
 
     features.forEach(val => {
         const div = document.createElement('div');
         div.className = 'feature-item';
         div.textContent = val;
+
+        // 이 아이템이 속한 범례 
+        div.dataset.targetLegend = legend.id;
 
         div.style.backgroundColor = getGradientColor(val, ctxGrad);
 
@@ -74,10 +78,9 @@ function showFeatures(features, ctxGrad) {
 }
 
 // 선택한 데이터의 범례 위치 알려주기
-function showMark() {
+function showMark(el) {
 
-    const legend = document.querySelector('.linearGradient')
-    const canvasGrad = document.querySelector('.canvasGrad')
+    const canvasGrad = el.querySelector('.canvasGrad')
     if (!canvasGrad) return;
 
     // create 마커 canvas
@@ -86,17 +89,20 @@ function showMark() {
     canvasMark.height = canvasGrad.height;
     canvasMark.classList.add('canvasMark')
     const ctxMark = canvasMark.getContext('2d')
-    legend.appendChild(canvasMark)
+    el.appendChild(canvasMark)
 
     document.addEventListener('click', e => {
         const choice = e.target.closest('.feature-item');
         if (!choice) return;
+        console.log(choice.dataset.targetLegend)
+
+        if(choice.dataset.targetLegend !== el.id) return;
 
         // 이전 마커를 지우고 새로 그립니다.
         ctxMark.clearRect(0, 0, canvasMark.width, canvasMark.height);
 
         const size = canvasMark.width / 2; // 마커 삼각형 크기 절반
-        const offset = 5; // 그라데이션 시작 여백 (createGradientColor와 일치해야 함)
+        const offset = 5; // 그라데이션 시작 여백 (createGradientLegend와 일치해야 함)
         const legendHeight = canvasGrad.height - offset * 2;
 
         // 데이터 값(0~100)을 높이 비율에 맞춰 좌표로 변환
@@ -110,25 +116,25 @@ function showMark() {
         ctxMark.lineTo(0, y + size);                 // 왼쪽 아래
         ctxMark.lineTo(canvasMark.width, y);         // 오른쪽 끝 꼭지점
         ctxMark.fill();
+
     });
 }
 
 // HTML의 data-* 속성을 읽어 자동으로 범례를 생성하는 로직
 window.addEventListener('DOMContentLoaded', () => {
-    const legends = document.querySelectorAll('.linearGradient');
+    const legends = document.querySelectorAll('.legendContainer');
     legends.forEach(el => {
         const min = el.dataset.min || 0;
         const max = el.dataset.max || 100;
         const width = parseInt(el.dataset.width) || 30;
         const height = parseInt(el.dataset.height) || 100;
         const colors = el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'];
-        
+
         // 범례 생성
-        createGradientColor(min, max, width, height, ...colors);
-        
+        createGradientLegend(el, min, max, width, height, ...colors);
+
         // data-mark="true" 설정이 있으면 마커 기능도 활성화
-        if (el.dataset.mark === 'true') {
-            showMark();
-        }
+        if (el.dataset.mark === 'true') showMark(el);
+
     });
 });

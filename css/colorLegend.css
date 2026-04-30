@@ -1,0 +1,23 @@
+.legendContainer {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 0.5rem;
+}
+
+.canvasMark {
+    order: 1;
+}
+
+.canvasGrad {
+    order: 2;
+}
+
+
+.legendLabel {
+    order: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: small;
+    margin-left: 3px;
+}
