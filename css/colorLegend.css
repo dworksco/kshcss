@@ -1,7 +1,16 @@
-.legendContainer {
+.legendContainer{
     display: flex;
+}
+.legendContainer.vertical {
     align-items: flex-start;
     margin-top: 0.5rem;
+}
+.legendContainer.horizontal{
+    flex-direction: column;
+}
+
+.canvasGrad, .canvasMark {
+    display: block;
 }
 
 .canvasMark {
@@ -16,10 +25,15 @@
 .legendLabel {
     order: 3;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
     font-family: 'Pretendard';
     font-weight: 600;
     font-size: small;
     margin-left: 3px;
+}
+.legendLabel.vertical{
+    flex-direction: column;
+}
+.legendLabel.horizontal{
+    
 }

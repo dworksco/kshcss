@@ -6,6 +6,7 @@ class ColorLegend {
 
         // 1. 설정값 중앙 관리
         this.config = {
+            orientation: el.dataset.orientation || "vertical",
             width: parseInt(el.dataset.width) || 30,
             height: parseInt(el.dataset.height) || 100,
             colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
@@ -36,7 +37,7 @@ class ColorLegend {
 
     // 그라데이션 캔버스 생성 및 그리기
     _createGradientCanvas() {
-        const { width, height, offset, colors } = this.config;
+        const { orientation, width, height, offset, colors } = this.config;
 
         this.canvasGrad = document.createElement('canvas');
         this.canvasGrad.width = width;
@@ -44,23 +45,47 @@ class ColorLegend {
         this.canvasGrad.classList.add('canvasGrad');
         this.ctxGrad = this.canvasGrad.getContext('2d', { willReadFrequently: true });
 
-        const grad = this.ctxGrad.createLinearGradient(0, offset, 0, height + offset);
+        let grad = null;
+        if(orientation == "vertical"){
+            grad = this.ctxGrad.createLinearGradient(0, offset, 0, height + offset);
+        } else{
+            grad = this.ctxGrad.createLinearGradient(offset, 0, width + offset, 0 )
+        }
+
+        
         colors.forEach((color, index) => {
             grad.addColorStop(index * (1 / (colors.length - 1)), color);
         });
 
+
         this.ctxGrad.fillStyle = grad;
-        this.ctxGrad.fillRect(0, offset, width, height);
+        if(orientation == "vertical"){
+            this.ctxGrad.fillRect(0, offset, width, height);
+        } else {
+            this.ctxGrad.fillRect(offset, 0, width, height);
+        }
         this.el.appendChild(this.canvasGrad);
     }
 
     // 라벨(Min/Max) 생성
     _createLabels() {
-        const { height, offset, labels } = this.config;
+        const { orientation, width, height, offset, labels } = this.config;
 
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('legendLabel');
-        labelContainer.style.height = `${height + offset * 2}px`;
+        if(orientation == "vertical"){
+
+            labelContainer.classList.add('vertical')
+            labelContainer.style.height = `${height + offset * 2}px`;
+            labelContainer.style.padding = `${offset}px 0`;
+
+        } else{
+
+            labelContainer.classList.add('horizontal');
+            labelContainer.style.width = `${width + offset * 2}px`;
+            labelContainer.style.padding = `0 ${offset}px`;
+            
+        }
 
         labels.forEach( label => {
             const labelEl = document.createElement('div');
