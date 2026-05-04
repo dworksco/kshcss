@@ -40,16 +40,23 @@ class ColorLegend {
         const { orientation, width, height, offset, colors } = this.config;
 
         this.canvasGrad = document.createElement('canvas');
-        this.canvasGrad.width = width;
-        this.canvasGrad.height = height + offset * 2;
         this.canvasGrad.classList.add('canvasGrad');
         this.ctxGrad = this.canvasGrad.getContext('2d', { willReadFrequently: true });
-
+        
+        // 가로/세로 모드 반영
         let grad = null;
         if(orientation == "vertical"){
+
+            this.canvasGrad.width = width;
+            this.canvasGrad.height = height + offset * 2;
             grad = this.ctxGrad.createLinearGradient(0, offset, 0, height + offset);
+
         } else{
+
+            this.canvasGrad.width = width + offset * 2;
+            this.canvasGrad.height = height
             grad = this.ctxGrad.createLinearGradient(offset, 0, width + offset, 0 )
+            
         }
 
         
@@ -73,6 +80,7 @@ class ColorLegend {
 
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('legendLabel');
+        // 가로/세로 모드 반영
         if(orientation == "vertical"){
 
             labelContainer.classList.add('vertical')
@@ -98,11 +106,20 @@ class ColorLegend {
 
     // 마커 기능 활성화 및 이벤트 바인딩
     _enableMarker() {
-        const { height, offset } = this.config;
+        const { orientation, width, height, offset } = this.config;
 
         this.canvasMark = document.createElement('canvas');
-        this.canvasMark.width = 10;
-        this.canvasMark.height = height + offset * 2;
+        // 가로/세로 모드 반영
+        if(orientation == "vertical"){
+
+            this.canvasMark.width = 10;
+            this.canvasMark.height = height + offset * 2;
+            
+        } else{
+
+            this.canvasMark.width = width + offset * 2;
+            this.canvasMark.height = 10
+        }
         this.canvasMark.classList.add('canvasMark');
         this.ctxMark = this.canvasMark.getContext('2d');
         this.el.appendChild(this.canvasMark);
@@ -112,16 +129,26 @@ class ColorLegend {
 
     // 수치에 해당하는 색상 추출 (캔버스 활용)
     getColor(value) {
-        const { min, max, height, offset } = this.config;
+        const { orientation, min, max, width, height, offset } = this.config;
 
         // 범위를 0~100으로 정규화
         const percent = ((value - min) / (max - min)) * 100;
-        const scaledY = (percent * (height / 100)) + offset;
+        let pixel = null;
+        if(orientation == "vertical"){
+            
+            const scaledY = (percent * (height / 100)) + offset;
+            // 캔버스 범위 내로 y좌표 제한
+            const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, scaledY));
+            pixel = this.ctxGrad.getImageData(0, y, 1, 1).data;
 
-        // 캔버스 범위 내로 y좌표 제한
-        const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, scaledY));
+        } else{
 
-        const pixel = this.ctxGrad.getImageData(0, y, 1, 1).data;
+            const scaledX = (percent * (width / 100)) + offset;
+            const x = Math.max(offset, Math.min(this.canvasGrad.width - offset -1, scaledX));
+            pixel = this.ctxGrad.getImageData(x, 0, 1, 1).data;
+
+        }
+
         return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
     }
 
@@ -129,18 +156,33 @@ class ColorLegend {
     updateMarker(value) {
         if (!this.ctxMark) return;
 
-        const { min, max, height, offset } = this.config;
+        const markerSize = 10;
+        const { orientation, min, max, width, height, offset } = this.config;
         const percent = ((value - min) / (max - min)) * 100;
-        const y = (percent * (height / 100)) + offset;
-        const size = this.canvasMark.width / 2;
+        const size = markerSize / 2;
+        
+        
+        if(orientation == "vertical"){
+            
+            this.ctxMark.clearRect(0, 0, markerSize, this.canvasMark.height);
+            this.ctxMark.fillStyle = 'black';
+            const y = (percent * (height / 100)) + offset;
+            this.ctxMark.beginPath();
+            this.ctxMark.moveTo(0, y - size);
+            this.ctxMark.lineTo(0, y + size);
+            this.ctxMark.lineTo(markerSize, y);
 
-        this.ctxMark.clearRect(0, 0, this.canvasMark.width, this.canvasMark.height);
-        this.ctxMark.fillStyle = 'black';
+        } else{
 
-        this.ctxMark.beginPath();
-        this.ctxMark.moveTo(0, y - size);
-        this.ctxMark.lineTo(0, y + size);
-        this.ctxMark.lineTo(this.canvasMark.width, y);
+            this.ctxMark.clearRect(0, 0, this.canvasMark.width, markerSize);
+            this.ctxMark.fillStyle = 'black';
+            const x = (percent * (width / 100)) + offset;
+            this.ctxMark.beginPath();
+            this.ctxMark.moveTo(x - size, 0);
+            this.ctxMark.lineTo(x + size, 0);
+            this.ctxMark.lineTo(x, this.canvasMark.height);
+
+        }
         this.ctxMark.fill();
     }
 
