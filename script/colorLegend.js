@@ -6,7 +6,7 @@ class ColorLegend {
 
         // 1. 설정값 중앙 관리
         this.config = {
-            orientation: el.dataset.orientation || "vertical",
+            isVert: (el.dataset.orientation || "vertical") === "vertical",
             width: parseInt(el.dataset.width) || 30,
             height: parseInt(el.dataset.height) || 100,
             colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
@@ -28,45 +28,54 @@ class ColorLegend {
     _init() {
         this._createGradientCanvas();
         this._createLabels();
-        
+
         // data-mark="true"면 마커 기능 활성화
         if (this.el.dataset.mark === 'true') {
             this._enableMarker();
         }
     }
 
+    _getPosition(value) {
+        const { isVert, min, max, width, height, offset } = this.config;
+        
+        // 범위를 0~100으로 정규화
+        const ratio = (value - min) / (max - min);
+        const mainDim = isVert ? height : width;
+        return (ratio * mainDim) + offset
+    }
+
     // 그라데이션 캔버스 생성 및 그리기
     _createGradientCanvas() {
-        const { orientation, width, height, offset, colors } = this.config;
+        const { isVert, width, height, offset, colors } = this.config;
 
         this.canvasGrad = document.createElement('canvas');
         this.canvasGrad.classList.add('canvasGrad');
         this.ctxGrad = this.canvasGrad.getContext('2d', { willReadFrequently: true });
-        
+
         // 가로/세로 모드 반영
         let grad = null;
-        if(orientation == "vertical"){
+        if (isVert) {
 
             this.canvasGrad.width = width;
             this.canvasGrad.height = height + offset * 2;
             grad = this.ctxGrad.createLinearGradient(0, offset, 0, height + offset);
 
-        } else{
+        } else {
 
             this.canvasGrad.width = width + offset * 2;
             this.canvasGrad.height = height
-            grad = this.ctxGrad.createLinearGradient(offset, 0, width + offset, 0 )
-            
+            grad = this.ctxGrad.createLinearGradient(offset, 0, width + offset, 0)
+
         }
 
-        
+
         colors.forEach((color, index) => {
             grad.addColorStop(index * (1 / (colors.length - 1)), color);
         });
 
 
         this.ctxGrad.fillStyle = grad;
-        if(orientation == "vertical"){
+        if (isVert) {
             this.ctxGrad.fillRect(0, offset, width, height);
         } else {
             this.ctxGrad.fillRect(offset, 0, width, height);
@@ -76,26 +85,26 @@ class ColorLegend {
 
     // 라벨(Min/Max) 생성
     _createLabels() {
-        const { orientation, width, height, offset, labels } = this.config;
+        const { isVert, width, height, offset, labels } = this.config;
 
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('legendLabel');
         // 가로/세로 모드 반영
-        if(orientation == "vertical"){
+        if (isVert) {
 
             labelContainer.classList.add('vertical')
             labelContainer.style.height = `${height + offset * 2}px`;
             labelContainer.style.padding = `${offset}px 0`;
 
-        } else{
+        } else {
 
             labelContainer.classList.add('horizontal');
             labelContainer.style.width = `${width + offset * 2}px`;
             labelContainer.style.padding = `0 ${offset}px`;
-            
+
         }
 
-        labels.forEach( label => {
+        labels.forEach(label => {
             const labelEl = document.createElement('div');
             labelEl.textContent = label;
             labelContainer.appendChild(labelEl);
@@ -106,16 +115,16 @@ class ColorLegend {
 
     // 마커 기능 활성화 및 이벤트 바인딩
     _enableMarker() {
-        const { orientation, width, height, offset } = this.config;
+        const { isVert, width, height, offset } = this.config;
 
         this.canvasMark = document.createElement('canvas');
         // 가로/세로 모드 반영
-        if(orientation == "vertical"){
+        if (isVert) {
 
             this.canvasMark.width = 10;
             this.canvasMark.height = height + offset * 2;
-            
-        } else{
+
+        } else {
 
             this.canvasMark.width = width + offset * 2;
             this.canvasMark.height = 10
@@ -129,22 +138,20 @@ class ColorLegend {
 
     // 수치에 해당하는 색상 추출 (캔버스 활용)
     getColor(value) {
-        const { orientation, min, max, width, height, offset } = this.config;
+        const { isVert, offset } = this.config;
 
-        // 범위를 0~100으로 정규화
-        const percent = ((value - min) / (max - min)) * 100;
+
         let pixel = null;
-        if(orientation == "vertical"){
-            
-            const scaledY = (percent * (height / 100)) + offset;
+        const position = this._getPosition(value)
+        if (isVert) {
+
             // 캔버스 범위 내로 y좌표 제한
-            const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, scaledY));
+            const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, position));
             pixel = this.ctxGrad.getImageData(0, y, 1, 1).data;
 
-        } else{
+        } else {
 
-            const scaledX = (percent * (width / 100)) + offset;
-            const x = Math.max(offset, Math.min(this.canvasGrad.width - offset -1, scaledX));
+            const x = Math.max(offset, Math.min(this.canvasGrad.width - offset - 1, position));
             pixel = this.ctxGrad.getImageData(x, 0, 1, 1).data;
 
         }
@@ -157,37 +164,36 @@ class ColorLegend {
         if (!this.ctxMark) return;
 
         const markerSize = 10;
-        const { orientation, min, max, width, height, offset } = this.config;
-        const percent = ((value - min) / (max - min)) * 100;
         const size = markerSize / 2;
-        
-        
-        if(orientation == "vertical"){
+        const { isVert, offset } = this.config;
+        const position = this._getPosition(value);
+
+
+        if (isVert) {
             
             this.ctxMark.clearRect(0, 0, markerSize, this.canvasMark.height);
-            this.ctxMark.fillStyle = 'black';
-            const y = (percent * (height / 100)) + offset;
             this.ctxMark.beginPath();
-            this.ctxMark.moveTo(0, y - size);
-            this.ctxMark.lineTo(0, y + size);
-            this.ctxMark.lineTo(markerSize, y);
-
-        } else{
-
+            this.ctxMark.moveTo(0, position - size);
+            this.ctxMark.lineTo(0, position + size);
+            this.ctxMark.lineTo(markerSize, position);
+            
+        } else {
+            
             this.ctxMark.clearRect(0, 0, this.canvasMark.width, markerSize);
-            this.ctxMark.fillStyle = 'black';
-            const x = (percent * (width / 100)) + offset;
             this.ctxMark.beginPath();
-            this.ctxMark.moveTo(x - size, 0);
-            this.ctxMark.lineTo(x + size, 0);
-            this.ctxMark.lineTo(x, this.canvasMark.height);
-
+            this.ctxMark.moveTo(position - size, 0);
+            this.ctxMark.lineTo(position + size, 0);
+            this.ctxMark.lineTo(position, this.canvasMark.height);
+            
         }
+        this.ctxMark.fillStyle = 'black';
         this.ctxMark.fill();
     }
 
     // 데이터를 받아서 화면(container)에 표시
     showFeatures(features, container) {
+        // fragement 사용하여 렌더링 성능 향상
+        const fragment = document.createDocumentFragment()
         features.forEach(val => {
             const div = document.createElement('div');
             div.className = 'feature-item';
@@ -196,8 +202,9 @@ class ColorLegend {
 
             // 자신의getColor 메서드 활용
             div.style.backgroundColor = this.getColor(val);
-            container.appendChild(div);
+            fragment.appendChild(div)
         });
+        container.appendChild(fragment);
     }
 }
 
