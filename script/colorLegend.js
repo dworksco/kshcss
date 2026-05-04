@@ -3,6 +3,8 @@ class ColorLegend {
         this.el = el;
 
         const labels = el.dataset.labels ? el.dataset.labels.split(',').map(label => label.trim()) : ['0', '100']
+        const markerSize = parseInt(el.dataset.markersize) || 10;
+        
 
         // 1. 설정값 중앙 관리
         this.config = {
@@ -10,18 +12,19 @@ class ColorLegend {
             width: parseInt(el.dataset.width) || 30,
             height: parseInt(el.dataset.height) || 100,
             colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
-            offset: 5, // 마커 및 여백 상수     
+            markerSize: markerSize,
+            offset: markerSize / 2, // marker가 잘리지 않게 여백 계산용
             labels: labels,
             min: parseFloat(labels[0]),
             max: parseFloat(labels[labels.length - 1])
         };
-
+        
         // 2. 인스턴스 변수 초기화
         this.canvasGrad = null;
         this.ctxGrad = null;
         this.canvasMark = null;
         this.ctxMark = null;
-
+        
         this._init();
     }
 
@@ -115,19 +118,20 @@ class ColorLegend {
 
     // 마커 기능 활성화 및 이벤트 바인딩
     _enableMarker() {
-        const { isVert, width, height, offset } = this.config;
+        const { isVert, width, height, offset, markerSize } = this.config;
 
         this.canvasMark = document.createElement('canvas');
         // 가로/세로 모드 반영
         if (isVert) {
 
-            this.canvasMark.width = 10;
+            this.canvasMark.width = markerSize;
             this.canvasMark.height = height + offset * 2;
 
         } else {
 
             this.canvasMark.width = width + offset * 2;
-            this.canvasMark.height = 10
+            this.canvasMark.height = markerSize
+            
         }
         this.canvasMark.classList.add('canvasMark');
         this.ctxMark = this.canvasMark.getContext('2d');
@@ -163,9 +167,8 @@ class ColorLegend {
     updateMarker(value) {
         if (!this.ctxMark) return;
 
-        const markerSize = 10;
+        const { isVert, offset, markerSize } = this.config;
         const size = markerSize / 2;
-        const { isVert, offset } = this.config;
         const position = this._getPosition(value);
 
 
@@ -211,7 +214,7 @@ class ColorLegend {
 // 자동 초기화 및 인스턴스 관리
 window.addEventListener('DOMContentLoaded', () => {
     const legends = document.querySelectorAll('.legendContainer');
-    window.colorLegends = {}; // 전역 저장소 (필요 시 접근 가능)
+    window.colorLegends = window.colorLegends || {}; // 전역 저장소 (기존 저장소가 있으면 유지)
 
     legends.forEach(el => {
         if (el.id) {
