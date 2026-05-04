@@ -9,10 +9,6 @@
     flex-direction: column;
 }
 
-.canvasGrad, .canvasMark {
-    display: block;
-}
-
 .canvasMark {
     order: 1;
 }
@@ -26,14 +22,14 @@
     order: 3;
     display: flex;
     justify-content: space-between;
-    font-family: 'Pretendard';
-    font-weight: 600;
+    font-family: 'GmarketSans';
+    font-weight: 300;
     font-size: small;
-    margin-left: 3px;
 }
 .legendLabel.vertical{
     flex-direction: column;
+    margin-left: 3px;
 }
 .legendLabel.horizontal{
-    
+    margin-top: 3px;
 }
