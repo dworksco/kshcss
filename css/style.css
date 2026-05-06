@@ -1,3 +1,7 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 /* 1. Flex 컨테이너 선언 (정렬을 위해 필수) */
 .d-flex { display: flex !important; }
 .d-inline-flex { display: inline-flex !important; }

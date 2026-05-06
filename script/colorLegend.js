@@ -7,8 +7,10 @@ class ColorLegend {
         
 
         // 1. 설정값 중앙 관리
+        const orientation = el.dataset.orientation || (el.classList.contains('horizontal') ? 'horizontal' : 'vertical');
+        
         this.config = {
-            isVert: (el.dataset.orientation || "vertical") === "vertical",
+            isVert: orientation === "vertical",
             width: parseInt(el.dataset.width) || 30,
             height: parseInt(el.dataset.height) || 100,
             colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],

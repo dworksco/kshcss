@@ -49,6 +49,7 @@
             font-weight: 500;
             font-size: small;
         }
+
     </style>
 </head>
 
@@ -66,9 +67,16 @@
 
     <div class="d-flex g-2">
         <div id="starContainer" class="feature-list"></div>
-        <div id="legend_star" class="legendContainer horizontal" data-mark="true" data-orientation="horizontal"
+        <div id="legend_star" class="legendContainer horizontal" data-mark="true" 
             data-width="120" data-height="10" data-markersize="15"></div>
     </div>
+
+    <div class="d-flex flex-column g-2">
+        <div id="skyContainer" class="feature-list"></div>
+        <div id="legend_sky" class="legendContainer horizontal ms-2" data-mark="true" 
+            data-width="120" data-height="10"  data-colors="#2F2FE4, #1A1953"></div>
+    </div>
+
 
 
     <script src="/script/colorLegend.js"></script>
@@ -85,6 +93,11 @@
             star.push(Math.round(Math.random() * 100));
         }
 
+        let sky = [];
+        for (let i = 0; i < 30; i++) {
+            sky.push(Math.round(Math.random() * 100));
+        }
+
 
         window.addEventListener('load', () => {
 
@@ -97,6 +110,12 @@
             const legend_star = document.getElementById('legend_star')
             const container_star = document.getElementById('starContainer')
             showFeatures(star, legend_star, container_star)
+
+            // 데이터 표출하기
+            const legend_sky = document.getElementById('legend_sky')
+            const container_sky = document.getElementById('skyContainer')
+            showFeatures(sky, legend_sky, container_sky)
+
 
 
         })
