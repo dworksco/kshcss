@@ -1,6 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang='en'>
 
 <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>color legend</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/colorLegend.css">
     <style>
@@ -24,8 +28,39 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow-y: auto; /* 스크롤 허용 */
+            background-color: #f0f2f5;
         }
+
+        /* 메인 콘텐츠 영역 */
+        .main-content {
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background-color: #f8f9fa;
+        }
+
+        .card h3 { margin: 0 0 10px 0; color: #333; }
+        .card p { color: #666; font-size: 0.9rem; line-height: 1.5; }
 
         /* 데이터를 표시할 스타일 추가 */
         .feature-list {
@@ -48,35 +83,54 @@
             font-family: 'GMarketSans';
             font-weight: 500;
             font-size: small;
+            cursor: pointer;
         }
 
+        .legend {
+            display: flex;
+            position: fixed;
+            right: 16px;
+            bottom: 0px;
+            z-index: 1000;
+            background-color: white;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="d-flex g-2">
+    <div class="main-content">
+        <h1>데이터 대시보드</h1>
+        <p>스크롤하여 페이지를 확인해보세요. 범례는 우측 하단에 고정되어 있습니다.</p>
 
-        <!-- 데이터가 뿌려질 컨테이너 -->
-        <div id="airContainer" class="feature-list"></div>
+        <div class="d-flex g-2">
+            <!-- 데이터가 뿌려질 컨테이너 -->
+            <div id="airContainer" class="feature-list"></div>
+        </div>
 
-        <div id="legend_air" class="legendContainer vertical" data-labels="0, 50, 100" data-width="10" data-height="120"
-            data-colors="#fdf1f5, #ee8e46, #c46b23" data-mark="true">
+        <div class="d-flex g-2">
+            <div id="starContainer" class="feature-list"></div>
+        </div>
+
+        <div class="d-flex flex-column g-2">
+            <div id="skyContainer" class="feature-list"></div>
         </div>
 
     </div>
 
-    <div class="d-flex g-2">
-        <div id="starContainer" class="feature-list"></div>
-        <div id="legend_star" class="legendContainer horizontal" data-mark="true" 
-            data-width="120" data-height="10" data-markersize="15"></div>
+    <div class="legend">
+        <div id="legend_air" class="legendContainer vertical" data-labels="0, 50, 100" data-width="10" data-height="120"
+            data-colors="#fdf1f5, #ee8e46, #c46b23" data-mark="true"></div>
+            <div id="legend_air_3" class="ms-2 legendContainer vertical" data-width="10" data-height="120"
+            data-colors="black, red"></div>
+            <div class="d-flex flex-column justify-content-end">
+                <div id="legend_air_2" class=" legendContainer horizontal" data-width="120" data-height="10"></div>
+            <div id="legend_star" class="legendContainer horizontal" data-mark="true" data-width="120" data-height="10"
+                data-markersize="15"></div>
+            <div id="legend_sky" class="legendContainer horizontal " data-mark="true" data-width="120" data-height="10"
+                data-colors="#2F2FE4, #1A1953"></div>
+            </div>
     </div>
-
-    <div class="d-flex flex-column g-2">
-        <div id="skyContainer" class="feature-list"></div>
-        <div id="legend_sky" class="legendContainer horizontal ms-2" data-mark="true" 
-            data-width="120" data-height="10"  data-colors="#2F2FE4, #1A1953"></div>
-    </div>
-
 
 
     <script src="/script/colorLegend.js"></script>
@@ -115,11 +169,7 @@
             const legend_sky = document.getElementById('legend_sky')
             const container_sky = document.getElementById('skyContainer')
             showFeatures(sky, legend_sky, container_sky)
-
-
-
         })
-
 
     </script>
 </body>

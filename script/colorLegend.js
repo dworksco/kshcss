@@ -1,4 +1,14 @@
 class ColorLegend {
+
+    el = null;
+    config = null;
+
+    canvasGrad = null;
+    ctxGrad = null;
+    canvasMark = null;
+    ctxMark = null;
+
+
     constructor(el) {
         this.el = el;
 
@@ -20,12 +30,6 @@ class ColorLegend {
             min: parseFloat(labels[0]),
             max: parseFloat(labels[labels.length - 1])
         };
-        
-        // 2. 인스턴스 변수 초기화
-        this.canvasGrad = null;
-        this.ctxGrad = null;
-        this.canvasMark = null;
-        this.ctxMark = null;
         
         this._init();
     }

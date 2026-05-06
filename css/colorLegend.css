@@ -1,5 +1,8 @@
 .legendContainer{
     display: flex;
+    user-select: none;
+    position: sticky;
+    z-index: 1000;
 }
 .legendContainer.vertical {
     align-items: flex-start;
