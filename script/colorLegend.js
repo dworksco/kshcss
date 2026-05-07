@@ -72,7 +72,7 @@ export default class ColorLegend {
         const { isVert, width, height, offset, colors } = this.config;
 
         this.gradientCanvas = document.createElement('canvas');
-        this.gradientCanvas.classList.add('gradientCanvas');
+        this.gradientCanvas.classList.add('cl-gradient');
         this.gradientCtx = this.gradientCanvas.getContext('2d', { willReadFrequently: true });
 
         // 가로/세로 모드 반영
@@ -151,7 +151,7 @@ export default class ColorLegend {
             this.markerCanvas.height = markerSize
             
         }
-        this.markerCanvas.classList.add('markerCanvas');
+        this.markerCanvas.classList.add('cl-marker');
         this.markerCtx = this.markerCanvas.getContext('2d');
         this.container.appendChild(this.markerCanvas);
     }
