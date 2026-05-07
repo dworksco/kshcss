@@ -13,11 +13,11 @@
     align-items: start;
 }
 
-.canvasMark {
+.markerCanvas {
     order: 1;
 }
 
-.canvasGrad {
+.gradientCanvas {
     order: 2;
 }
 
