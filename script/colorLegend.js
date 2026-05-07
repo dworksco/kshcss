@@ -1,29 +1,35 @@
-class ColorLegend {
+export default class ColorLegend {
 
-    el = null;
+    container = null;
     config = null;
 
-    canvasGrad = null;
-    ctxGrad = null;
-    canvasMark = null;
-    ctxMark = null;
+    gradientCanvas = null;
+    gradientCtx = null;
+    markerCanvas = null;
+    markerCtx = null;
 
+    // 인스턴스를 저장하는 정적 맵 (ID를 키로 사용)
+    static instances = new Map();
 
-    constructor(el) {
-        this.el = el;
+    constructor(container) {
+        this.container = container;
 
-        const labels = el.dataset.labels ? el.dataset.labels.split(',').map(label => label.trim()) : ['0', '100']
-        const markerSize = parseInt(el.dataset.markersize) || 10;
+        // 이미 초기화된 요소는 건너뛰기
+        if (this.container.dataset.clInitialized) {
+            return;
+        }
+
+        const labels = container.dataset.labels ? container.dataset.labels.split(',').map(label => label.trim()) : ['0', '100']
+        const markerSize = parseInt(container.dataset.markerSize) || parseInt(container.dataset.markersize) || 10;
         
-
         // 1. 설정값 중앙 관리
-        const orientation = el.dataset.orientation || (el.classList.contains('horizontal') ? 'horizontal' : 'vertical');
+        const orientation = container.dataset.orientation || (container.classList.contains('horizontal') ? 'horizontal' : 'vertical');
         
         this.config = {
             isVert: orientation === "vertical",
-            width: parseInt(el.dataset.width) || 30,
-            height: parseInt(el.dataset.height) || 100,
-            colors: el.dataset.colors ? el.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
+            width: parseInt(container.dataset.width) || 30,
+            height: parseInt(container.dataset.height) || 100,
+            colors: container.dataset.colors ? container.dataset.colors.split(',').map(c => c.trim()) : ['#fff', '#000'],
             markerSize: markerSize,
             offset: markerSize / 2, // marker가 잘리지 않게 여백 계산용
             labels: labels,
@@ -32,6 +38,14 @@ class ColorLegend {
         };
         
         this._init();
+        
+        // 초기화 완료 플래그
+        this.container.dataset.clInitialized = 'true';
+        
+        // 인스턴스 저장 (ID가 있을 경우)
+        if (this.container.id) {
+            ColorLegend.instances.set(this.container.id, this);
+        }
     }
 
     _init() {
@@ -39,7 +53,7 @@ class ColorLegend {
         this._createLabels();
 
         // data-mark="true"면 마커 기능 활성화
-        if (this.el.dataset.mark === 'true') {
+        if (this.container.dataset.mark === 'true') {
             this._enableMarker();
         }
     }
@@ -57,39 +71,37 @@ class ColorLegend {
     _createGradientCanvas() {
         const { isVert, width, height, offset, colors } = this.config;
 
-        this.canvasGrad = document.createElement('canvas');
-        this.canvasGrad.classList.add('canvasGrad');
-        this.ctxGrad = this.canvasGrad.getContext('2d', { willReadFrequently: true });
+        this.gradientCanvas = document.createElement('canvas');
+        this.gradientCanvas.classList.add('gradientCanvas');
+        this.gradientCtx = this.gradientCanvas.getContext('2d', { willReadFrequently: true });
 
         // 가로/세로 모드 반영
         let grad = null;
         if (isVert) {
 
-            this.canvasGrad.width = width;
-            this.canvasGrad.height = height + offset * 2;
-            grad = this.ctxGrad.createLinearGradient(0, offset, 0, height + offset);
+            this.gradientCanvas.width = width;
+            this.gradientCanvas.height = height + offset * 2;
+            grad = this.gradientCtx.createLinearGradient(0, offset, 0, height + offset);
 
         } else {
 
-            this.canvasGrad.width = width + offset * 2;
-            this.canvasGrad.height = height
-            grad = this.ctxGrad.createLinearGradient(offset, 0, width + offset, 0)
+            this.gradientCanvas.width = width + offset * 2;
+            this.gradientCanvas.height = height
+            grad = this.gradientCtx.createLinearGradient(offset, 0, width + offset, 0)
 
         }
-
 
         colors.forEach((color, index) => {
             grad.addColorStop(index * (1 / (colors.length - 1)), color);
         });
 
-
-        this.ctxGrad.fillStyle = grad;
+        this.gradientCtx.fillStyle = grad;
         if (isVert) {
-            this.ctxGrad.fillRect(0, offset, width, height);
+            this.gradientCtx.fillRect(0, offset, width, height);
         } else {
-            this.ctxGrad.fillRect(offset, 0, width, height);
+            this.gradientCtx.fillRect(offset, 0, width, height);
         }
-        this.el.appendChild(this.canvasGrad);
+        this.container.appendChild(this.gradientCanvas);
     }
 
     // 라벨(Min/Max) 생성
@@ -97,7 +109,7 @@ class ColorLegend {
         const { isVert, width, height, offset, labels } = this.config;
 
         const labelContainer = document.createElement('div');
-        labelContainer.classList.add('legendLabel');
+        labelContainer.classList.add('cl-label');
         // 가로/세로 모드 반영
         if (isVert) {
 
@@ -119,50 +131,47 @@ class ColorLegend {
             labelContainer.appendChild(labelEl);
         })
 
-        this.el.appendChild(labelContainer);
+        this.container.appendChild(labelContainer);
     }
 
     // 마커 기능 활성화 및 이벤트 바인딩
     _enableMarker() {
         const { isVert, width, height, offset, markerSize } = this.config;
 
-        this.canvasMark = document.createElement('canvas');
+        this.markerCanvas = document.createElement('canvas');
         // 가로/세로 모드 반영
         if (isVert) {
 
-            this.canvasMark.width = markerSize;
-            this.canvasMark.height = height + offset * 2;
+            this.markerCanvas.width = markerSize;
+            this.markerCanvas.height = height + offset * 2;
 
         } else {
 
-            this.canvasMark.width = width + offset * 2;
-            this.canvasMark.height = markerSize
+            this.markerCanvas.width = width + offset * 2;
+            this.markerCanvas.height = markerSize
             
         }
-        this.canvasMark.classList.add('canvasMark');
-        this.ctxMark = this.canvasMark.getContext('2d');
-        this.el.appendChild(this.canvasMark);
-
-
+        this.markerCanvas.classList.add('markerCanvas');
+        this.markerCtx = this.markerCanvas.getContext('2d');
+        this.container.appendChild(this.markerCanvas);
     }
 
     // 수치에 해당하는 색상 추출 (캔버스 활용)
     getColor(value) {
         const { isVert, offset } = this.config;
 
-
         let pixel = null;
         const position = this._getPosition(value)
         if (isVert) {
 
             // 캔버스 범위 내로 y좌표 제한
-            const y = Math.max(offset, Math.min(this.canvasGrad.height - offset - 1, position));
-            pixel = this.ctxGrad.getImageData(0, y, 1, 1).data;
+            const y = Math.max(offset, Math.min(this.gradientCanvas.height - offset - 1, position));
+            pixel = this.gradientCtx.getImageData(0, y, 1, 1).data;
 
         } else {
 
-            const x = Math.max(offset, Math.min(this.canvasGrad.width - offset - 1, position));
-            pixel = this.ctxGrad.getImageData(x, 0, 1, 1).data;
+            const x = Math.max(offset, Math.min(this.gradientCanvas.width - offset - 1, position));
+            pixel = this.gradientCtx.getImageData(x, 0, 1, 1).data;
 
         }
 
@@ -171,7 +180,7 @@ class ColorLegend {
 
     // 마커(화살표) 위치 업데이트
     updateMarker(value) {
-        if (!this.ctxMark) return;
+        if (!this.markerCtx) return;
 
         const { isVert, offset, markerSize } = this.config;
         const size = markerSize / 2;
@@ -180,72 +189,70 @@ class ColorLegend {
 
         if (isVert) {
             
-            this.ctxMark.clearRect(0, 0, markerSize, this.canvasMark.height);
-            this.ctxMark.beginPath();
-            this.ctxMark.moveTo(0, position - size);
-            this.ctxMark.lineTo(0, position + size);
-            this.ctxMark.lineTo(markerSize, position);
+            this.markerCtx.clearRect(0, 0, markerSize, this.markerCanvas.height);
+            this.markerCtx.beginPath();
+            this.markerCtx.moveTo(0, position - size);
+            this.markerCtx.lineTo(0, position + size);
+            this.markerCtx.lineTo(markerSize, position);
             
         } else {
             
-            this.ctxMark.clearRect(0, 0, this.canvasMark.width, markerSize);
-            this.ctxMark.beginPath();
-            this.ctxMark.moveTo(position - size, 0);
-            this.ctxMark.lineTo(position + size, 0);
-            this.ctxMark.lineTo(position, this.canvasMark.height);
+            this.markerCtx.clearRect(0, 0, this.markerCanvas.width, markerSize);
+            this.markerCtx.beginPath();
+            this.markerCtx.moveTo(position - size, 0);
+            this.markerCtx.lineTo(position + size, 0);
+            this.markerCtx.lineTo(position, this.markerCanvas.height);
             
         }
-        this.ctxMark.fillStyle = 'black';
-        this.ctxMark.fill();
+        this.markerCtx.fillStyle = 'black';
+        this.markerCtx.fill();
     }
 
     // 데이터를 받아서 화면(container)에 표시
-    showFeatures(features, container) {
-        // fragement 사용하여 렌더링 성능 향상
+    render(items, targetContainer) {
+        // fragment 사용하여 렌더링 성능 향상
         const fragment = document.createDocumentFragment()
-        features.forEach(val => {
+        items.forEach(val => {
             const div = document.createElement('div');
             div.className = 'feature-item';
             div.textContent = val;
-            div.dataset.targetLegend = this.el.id; // 범례와 연결
+            div.dataset.targetLegend = this.container.id; // 범례와 연결
 
-            // 자신의getColor 메서드 활용
+            // 자신의 getColor 메서드 활용
             div.style.backgroundColor = this.getColor(val);
+            
+            // 아이템 클릭 시 해당 범례의 마커 업데이트
+            div.addEventListener('click', () => {
+                this.updateMarker(val);
+            });
+            
             fragment.appendChild(div)
         });
-        container.appendChild(fragment);
+        targetContainer.appendChild(fragment);
+    }
+    
+    // 페이지 내의 지정된 클래스를 가진 모든 요소를 찾아 인스턴스화
+    static initAll(selector = '.cl-container') {
+        const legends = document.querySelectorAll(selector);
+        const instances = [];
+        legends.forEach(el => {
+            instances.push(new ColorLegend(el));
+        });
+        return instances;
+    }
+    
+    // ID로 특정 인스턴스 가져오기
+    static getById(id) {
+        return ColorLegend.instances.get(id);
     }
 }
 
-// 자동 초기화 및 인스턴스 관리
-window.addEventListener('DOMContentLoaded', () => {
-    const legends = document.querySelectorAll('.legendContainer');
-    window.colorLegends = window.colorLegends || {}; // 전역 저장소 (기존 저장소가 있으면 유지)
-
-    legends.forEach(el => {
-        if (el.id) {
-            window.colorLegends[el.id] = new ColorLegend(el);
-        }
+// 브라우저 환경인 경우 전역에 노출 및 자동 초기화
+if (typeof window !== 'undefined') {
+    window.ColorLegend = ColorLegend;
+    
+    // DOM이 로드되면 자동으로 범례 초기화
+    window.addEventListener('DOMContentLoaded', () => {
+        ColorLegend.initAll();
     });
-
-    // 이벤트 리스너 등록
-    document.addEventListener('click', (e) => {
-        const item = e.target.closest('.feature-item');
-        if (!item) return;
-
-        const targetId = item.dataset.targetLegend;
-        const instance = window.colorLegends[targetId]
-
-        instance.updateMarker(parseFloat(item.textContent));
-    });
-});
-
-// 하위 호환성을 위한 헬퍼 함수 (기존 HTML script 태그에서 호출하는 경우 대비)
-function showFeatures(features, legendEl, containerEl) {
-    const instance = window.colorLegends[legendEl.id];
-    if (instance) {
-        instance.showFeatures(features, containerEl);
-    } else {
-        console.warn(`ID가 ${legendEl.id}인 ColorLegend 인스턴스를 찾을 수 없습니다.`);
-    }
 }

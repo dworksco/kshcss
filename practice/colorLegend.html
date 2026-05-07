@@ -43,31 +43,6 @@
             margin-top: 2rem;
         }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            background-color: #f8f9fa;
-        }
-
-        .card h3 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-
-        .card p {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
         /* 데이터를 표시할 스타일 추가 */
         .feature-list {
             display: flex;
@@ -131,17 +106,17 @@
 
         <div class="d-flex">
 
-            <div id="legend_air" class="legendContainer vertical" data-labels="0, 50, 100" data-width="10"
+            <div id="legend_air" class="cl-container vertical" data-labels="0, 50, 100" data-width="10"
                 data-height="120" data-colors="#fdf1f5, #ee8e46, #c46b23" data-mark="true"></div>
-            <div id="legend_air_3" class="ms-2 legendContainer vertical" data-width="10" data-height="120"
+            <div id="legend_air_3" class="ms-2 cl-container vertical" data-width="10" data-height="120"
                 data-colors="black, red"></div>
 
         </div>
-        <div id="legend_air_2" class=" legendContainer horizontal" data-width="120" data-height="10"></div>
-        <div id="legend_star" class="legendContainer horizontal" data-mark="true" data-width="120" data-height="10"
+        <div id="legend_air_2" class="cl-container horizontal" data-width="120" data-height="10"></div>
+        <div id="legend_star" class="cl-container horizontal" data-mark="true" data-width="120" data-height="10"
             data-markersize="15">
         </div>
-        <div id="legend_sky" class="legendContainer horizontal " data-mark="true" data-width="120" data-height="10"
+        <div id="legend_sky" class="cl-container horizontal " data-mark="true" data-width="120" data-height="10"
             data-colors="#2F2FE4, #1A1953">
         </div>
 
@@ -150,6 +125,8 @@
 
     <script src="/script/colorLegend.js" defer></script>
     <script type="module">
+
+        import ColorLegend from '/script/colorLegend.js';
 
         // 데이터 생성 (0~100 사이의 랜덤 숫자 30개)
         let air = [];
@@ -167,25 +144,26 @@
             sky.push(Math.round(Math.random() * 100));
         }
 
-
+        // 데이터 표출하기
         window.addEventListener('load', () => {
 
             // 데이터 표출하기 
-            const legend_air = document.getElementById('legend_air')
+            // air 
+            const legend_air = ColorLegend.getById('legend_air');
             const container_air = document.getElementById('airContainer')
-            showFeatures(air, legend_air, container_air)
+            if(legend_air) legend_air.render(air, container_air)
 
-            // 데이터 표출하기
-            const legend_star = document.getElementById('legend_star')
+            // star
+            const legend_star = ColorLegend.getById('legend_star');
             const container_star = document.getElementById('starContainer')
-            showFeatures(star, legend_star, container_star)
+            if(legend_star) legend_star.render(star, container_star)
 
-            // 데이터 표출하기
-            const legend_sky = document.getElementById('legend_sky')
+            // sky
+            const legend_sky = ColorLegend.getById('legend_sky');
             const container_sky = document.getElementById('skyContainer')
-            showFeatures(sky, legend_sky, container_sky)
-        })
+            if(legend_sky) legend_sky.render(sky, container_sky)
 
+        })
     </script>
 </body>
 

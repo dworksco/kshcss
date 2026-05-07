@@ -1,14 +1,14 @@
-.legendContainer{
+.cl-container{
     display: flex;
     user-select: none;
     position: sticky;
     z-index: 1000;
 }
-.legendContainer.vertical {
+.cl-container.vertical {
     align-items: flex-start;
     margin-top: 0.5rem;
 }
-.legendContainer.horizontal{
+.cl-container.horizontal{
     flex-direction: column;
     align-items: start;
 }
@@ -22,7 +22,7 @@
 }
 
 
-.legendLabel {
+.cl-label {
     order: 3;
     display: flex;
     justify-content: space-between;
@@ -30,10 +30,10 @@
     font-weight: 300;
     font-size: small;
 }
-.legendLabel.vertical{
+.cl-label.vertical{
     flex-direction: column;
     margin-left: 3px;
 }
-.legendLabel.horizontal{
+.cl-label.horizontal{
     margin-top: 3px;
 }
