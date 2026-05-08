@@ -34,7 +34,7 @@ export default class ColorLegend {
             offset: markerSize / 2, // marker가 잘리지 않게 여백 계산용
             labels: labels,
             min: parseFloat(labels[0]),
-            max: parseFloat(labels[labels.length - 1])
+            max: parseFloat(labels[labels.length - 1]),
         };
 
         this._init();
@@ -59,7 +59,7 @@ export default class ColorLegend {
 
         // 범례 클릭 시 해당되는 데이터 추출
         this.container.addEventListener('click', (e) => {
-            const { isVert, offset } = this.config;
+            const isVert = this.config;
             let value;
 
             // 클릭 위치로 데이터 값 찾기
@@ -73,12 +73,11 @@ export default class ColorLegend {
             this._updateMarker(value)
             console.log(value)
 
-            // 해당 범례이고 div.textContent == value인 데이터div 찾기
-            const data = document.querySelectorAll('.feature-item')
+            const data = document.querySelectorAll('.cl-feature-item')
             data.forEach(div => {
+                // 해당 범례이고 div.textContent == value인 데이터div 찾기
                 if (div.dataset.targetLegend == this.container.id && div.textContent == value) {
-                    console.log(`change!`)
-                    div.classList.add('selected')
+                    div.classList.add('selected') // 스타일 적용
                 }
             });
         })
@@ -99,7 +98,7 @@ export default class ColorLegend {
         const { isVert, min, max, width, height, offset } = this.config;
 
 
-        const mainDim = width < height ? height : width;
+        const mainDim = isVert ? height : width;
         const ratio = (position - offset) / mainDim;
         return (ratio * (max - min)) + min
     }
@@ -251,7 +250,7 @@ export default class ColorLegend {
         const fragment = document.createDocumentFragment()
         items.forEach(val => {
             const div = document.createElement('div');
-            div.className = 'feature-item';
+            div.className = 'cl-feature-item';
             div.textContent = val;
             div.dataset.targetLegend = this.container.id; // 범례와 연결
 

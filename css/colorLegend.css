@@ -1,3 +1,5 @@
+/* marker + gradient + label = container */
+/* cl-container */
 .cl-container{
     display: flex;
     position: sticky;
@@ -12,15 +14,17 @@
     align-items: start;
 }
 
+/* cl-marker */
 .cl-marker {
     order: 1;
 }
 
+/* cl-gradient */
 .cl-gradient {
     order: 2;
 }
 
-
+/* cl-label */
 .cl-label {
     order: 3;
     display: flex;
@@ -36,4 +40,18 @@
 }
 .cl-label.horizontal{
     margin-top: 3px;
+}
+
+/* feature-list 안에 feature-item */
+/* cl-feature-list */
+.cl-feature-list{
+
+}
+
+/* cl-feature-item */
+.cl-feature-item{
+
+}
+.cl-feature-item.selected{
+    
 }
