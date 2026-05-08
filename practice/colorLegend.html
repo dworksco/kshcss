@@ -67,6 +67,14 @@
             cursor: pointer;
         }
 
+        /* 선택된 상태 */
+        .feature-item.selected {
+            outline: 3px solid red;
+            outline-offset: 2px;
+            border-radius: 4px;
+
+        }
+
         .legend {
             display: flex;
             flex-direction: column;
@@ -146,23 +154,26 @@
         // 데이터 표출하기
         window.addEventListener('load', () => {
 
-            // 데이터 표출하기 
             // air 
             const legend_air = ColorLegend.getById('legend_air');
             const container_air = document.getElementById('airContainer')
-            if(legend_air) legend_air.render(air, container_air)
+            if (legend_air) legend_air.render(air, container_air)
 
             // star
             const legend_star = ColorLegend.getById('legend_star');
             const container_star = document.getElementById('starContainer')
-            if(legend_star) legend_star.render(star, container_star)
+            if (legend_star) legend_star.render(star, container_star)
 
             // sky
             const legend_sky = ColorLegend.getById('legend_sky');
             const container_sky = document.getElementById('skyContainer')
-            if(legend_sky) legend_sky.render(sky, container_sky)
+            if (legend_sky) legend_sky.render(sky, container_sky)
 
         })
+
+        
+
+
     </script>
 </body>
 

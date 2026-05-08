@@ -21,10 +21,10 @@ export default class ColorLegend {
 
         const labels = container.dataset.labels ? container.dataset.labels.split(',').map(label => label.trim()) : ['0', '100']
         const markerSize = parseInt(container.dataset.markerSize) || parseInt(container.dataset.markersize) || 10;
-        
+
         // 1. 설정값 중앙 관리
         const orientation = container.dataset.orientation || (container.classList.contains('horizontal') ? 'horizontal' : 'vertical');
-        
+
         this.config = {
             isVert: orientation === "vertical",
             width: parseInt(container.dataset.width) || 30,
@@ -36,12 +36,12 @@ export default class ColorLegend {
             min: parseFloat(labels[0]),
             max: parseFloat(labels[labels.length - 1])
         };
-        
+
         this._init();
-        
+
         // 초기화 완료 플래그
         this.container.dataset.clInitialized = 'true';
-        
+
         // 인스턴스 저장 (ID가 있을 경우)
         if (this.container.id) {
             ColorLegend.instances.set(this.container.id, this);
@@ -56,15 +56,52 @@ export default class ColorLegend {
         if (this.container.dataset.mark === 'true') {
             this._enableMarker();
         }
+
+        // 범례 클릭 시 해당되는 데이터 추출
+        this.container.addEventListener('click', (e) => {
+            const { isVert, offset } = this.config;
+            let value;
+
+            // 클릭 위치로 데이터 값 찾기
+            if (isVert) {
+                value = Math.round(this._getValue(e.offsetY))
+            } else {
+                value = Math.round(this._getValue(e.offsetX))
+            }
+
+            // 마커 실행(이벤트 표시용)
+            this._updateMarker(value)
+            console.log(value)
+
+            // 해당 범례이고 div.textContent == value인 데이터div 찾기
+            const data = document.querySelectorAll('.feature-item')
+            data.forEach(div => {
+                if (div.dataset.targetLegend == this.container.id && div.textContent == value) {
+                    console.log(`change!`)
+                    div.classList.add('selected')
+                }
+            });
+        })
     }
 
+    // 데이터가 범례에서 위치하는 좌표 표출
     _getPosition(value) {
         const { isVert, min, max, width, height, offset } = this.config;
-        
+
         // 범위를 0~100으로 정규화
         const ratio = (value - min) / (max - min);
         const mainDim = isVert ? height : width;
         return (ratio * mainDim) + offset
+    }
+
+    // 범례 위치가 가지는 데이터 표출
+    _getValue(position) {
+        const { isVert, min, max, width, height, offset } = this.config;
+
+
+        const mainDim = width < height ? height : width;
+        const ratio = (position - offset) / mainDim;
+        return (ratio * (max - min)) + min
     }
 
     // 그라데이션 캔버스 생성 및 그리기
@@ -149,7 +186,7 @@ export default class ColorLegend {
 
             this.markerCanvas.width = width + offset * 2;
             this.markerCanvas.height = markerSize
-            
+
         }
         this.markerCanvas.classList.add('cl-marker');
         this.markerCtx = this.markerCanvas.getContext('2d');
@@ -157,7 +194,7 @@ export default class ColorLegend {
     }
 
     // 수치에 해당하는 색상 추출 (캔버스 활용)
-    getColor(value) {
+    _getColor(value) {
         const { isVert, offset } = this.config;
 
         let pixel = null;
@@ -179,7 +216,7 @@ export default class ColorLegend {
     }
 
     // 마커(화살표) 위치 업데이트
-    updateMarker(value) {
+    _updateMarker(value) {
         if (!this.markerCtx) return;
 
         const { isVert, offset, markerSize } = this.config;
@@ -188,21 +225,21 @@ export default class ColorLegend {
 
 
         if (isVert) {
-            
+
             this.markerCtx.clearRect(0, 0, markerSize, this.markerCanvas.height);
             this.markerCtx.beginPath();
             this.markerCtx.moveTo(0, position - size);
             this.markerCtx.lineTo(0, position + size);
             this.markerCtx.lineTo(markerSize, position);
-            
+
         } else {
-            
+
             this.markerCtx.clearRect(0, 0, this.markerCanvas.width, markerSize);
             this.markerCtx.beginPath();
             this.markerCtx.moveTo(position - size, 0);
             this.markerCtx.lineTo(position + size, 0);
             this.markerCtx.lineTo(position, this.markerCanvas.height);
-            
+
         }
         this.markerCtx.fillStyle = 'black';
         this.markerCtx.fill();
@@ -218,19 +255,19 @@ export default class ColorLegend {
             div.textContent = val;
             div.dataset.targetLegend = this.container.id; // 범례와 연결
 
-            // 자신의 getColor 메서드 활용
-            div.style.backgroundColor = this.getColor(val);
-            
+            // 자신의 _getColor 메서드 활용
+            div.style.backgroundColor = this._getColor(val);
+
             // 아이템 클릭 시 해당 범례의 마커 업데이트
             div.addEventListener('click', () => {
-                this.updateMarker(val);
+                this._updataeMarker(val);
             });
-            
+
             fragment.appendChild(div)
         });
         targetContainer.appendChild(fragment);
     }
-    
+
     // 페이지 내의 지정된 클래스를 가진 모든 요소를 찾아 인스턴스화
     static initAll(selector = '.cl-container') {
         const legends = document.querySelectorAll(selector);
@@ -240,17 +277,19 @@ export default class ColorLegend {
         });
         return instances;
     }
-    
+
     // ID로 특정 인스턴스 가져오기
     static getById(id) {
         return ColorLegend.instances.get(id);
     }
+
+
 }
 
 // 브라우저 환경인 경우 전역에 노출 및 자동 초기화
 if (typeof window !== 'undefined') {
     window.ColorLegend = ColorLegend;
-    
+
     // DOM이 로드되면 자동으로 범례 초기화
     window.addEventListener('DOMContentLoaded', () => {
         ColorLegend.initAll();

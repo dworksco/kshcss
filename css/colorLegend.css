@@ -1,6 +1,5 @@
 .cl-container{
     display: flex;
-    user-select: none;
     position: sticky;
     z-index: 1000;
 }
@@ -25,6 +24,7 @@
 .cl-label {
     order: 3;
     display: flex;
+    user-select: none;
     justify-content: space-between;
     font-family: 'GmarketSans';
     font-weight: 300;
