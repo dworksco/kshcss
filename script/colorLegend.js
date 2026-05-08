@@ -260,7 +260,7 @@ export default class ColorLegend {
 
             // 아이템 클릭 시 해당 범례의 마커 업데이트
             div.addEventListener('click', () => {
-                this._updataeMarker(val);
+                this._updateMarker(val);
             });
 
             fragment.appendChild(div)
