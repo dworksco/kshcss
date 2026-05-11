@@ -7,6 +7,7 @@ export default class ColorLegend {
     gradientCtx = null;
     markerCanvas = null;
     markerCtx = null;
+    tooltip = null;
 
     // 인스턴스를 저장하는 정적 맵 (ID를 키로 사용)
     static instances = new Map();
@@ -51,6 +52,7 @@ export default class ColorLegend {
     _init() {
         this._createGradientCanvas();
         this._createLabels();
+        this._createTooltip();
 
         // data-mark="true"면 마커 기능 활성화
         if (this.container.dataset.mark === 'true') {
@@ -59,19 +61,18 @@ export default class ColorLegend {
 
         // 범례 클릭 시 해당되는 데이터 추출
         this.container.addEventListener('click', (e) => {
-            const isVert = this.config;
+            const { isVert } = this.config;
             let value;
 
             // 클릭 위치로 데이터 값 찾기
             if (isVert) {
-                value = Math.round(this._getValue(e.offsetY))
+                value = this._getValue(e.offsetY)
             } else {
-                value = Math.round(this._getValue(e.offsetX))
+                value = this._getValue(e.offsetX)
             }
 
             // 마커 실행(이벤트 표시용)
             this._updateMarker(value)
-            console.log(value)
 
             const data = document.querySelectorAll('.cl-feature-item')
             data.forEach(div => {
@@ -80,6 +81,33 @@ export default class ColorLegend {
                     div.classList.add('selected') // 스타일 적용
                 }
             });
+        })
+
+        // 범례 위로 마우스 올릴 시 tooltip 활성화
+        this.container.addEventListener('mousemove', (e) => {
+            if (!e.target.classList.contains('cl-gradient')) return;
+
+            const { isVert } = this.config;
+            let value;
+
+            // 클릭 위치로 데이터 값 찾기
+            if (isVert) {
+                value = this._getValue(e.offsetY)
+            } else {
+                value = this._getValue(e.offsetX)
+            }
+
+            this.tooltip.style.display = '';
+            this.tooltip.textContent = value;
+            this.tooltip.style.left = `${e.clientX + 15}px`
+            this.tooltip.style.top = `${e.clientY + 15}px`
+
+
+        })
+
+        // tootip 비활성화
+        this.container.addEventListener('mouseleave', (e) => {
+            this.tooltip.style.display = 'none';
         })
     }
 
@@ -100,7 +128,7 @@ export default class ColorLegend {
 
         const mainDim = isVert ? height : width;
         const ratio = (position - offset) / mainDim;
-        return (ratio * (max - min)) + min
+        return Math.round((ratio * (max - min)) + min)
     }
 
     // 그라데이션 캔버스 생성 및 그리기
@@ -168,6 +196,15 @@ export default class ColorLegend {
         })
 
         this.container.appendChild(labelContainer);
+    }
+
+    // tooltip 생성
+    _createTooltip() {
+        this.tooltip = document.createElement('div');
+        this.tooltip.classList.add('cl-tooltip');
+        // this.tooltip.style.display = 'none';
+
+        document.body.appendChild(this.tooltip);
     }
 
     // 마커 기능 활성화 및 이벤트 바인딩

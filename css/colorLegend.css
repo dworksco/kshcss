@@ -24,6 +24,18 @@
     order: 2;
 }
 
+/* cl-tooltip */
+.cl-tooltip{
+    position: fixed;
+    background: rgba(0, 0,  0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'GmarketSans';
+    z-index: 2000;
+}
+
 /* cl-label */
 .cl-label {
     order: 3;
