@@ -290,21 +290,26 @@ export default class ColorLegend {
     _updateLabel(items) {
 
         // 데이터 정렬 후 최대최소 뽑기
-        const defineItems = items.map(item => String(item).padStart(2, '0')).sort().map(i => Number(i));
+        const sortedItems = items.sort((a,b) => a - b)
+        // items.map(item => String(item).padStart(2, '0')).sort().map(i => Number(i));
         
         // this.config.labels/min/max 재 설정
-        this.config.min = defineItems[0];
-        this.config.max = defineItems[defineItems.length - 1];
+        this.config.min = sortedItems[0];
+        this.config.max = sortedItems[sortedItems.length - 1];
         this.config.labels = [this.config.min, this.config.max];
 
 
         // cl-container 초기화
         const containerChild = Array.from(this.container.children)
         containerChild.forEach(el => el.remove())
-        console.log(containerChild)
 
         // cl-container 재생성
-        this._init()
+        this._createGradientCanvas();
+        this._createLabels();
+        this._createTooltip();
+        if (this.container.dataset.mark === 'true') {
+            this._enableMarker();
+        }
         
     }
 
