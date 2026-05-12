@@ -99,7 +99,7 @@ export default class ColorLegend {
 
             this.tooltip.style.display = '';
             this.tooltip.textContent = value;
-            this.tooltip.style.left = `${e.clientX + 15}px`
+            this.tooltip.style.left = `${e.clientX - 15}px`
             this.tooltip.style.top = `${e.clientY + 15}px`
 
 
