@@ -115,7 +115,7 @@ export default class ColorLegend {
     _getPosition(value) {
         const { isVert, min, max, width, height, offset } = this.config;
 
-        // 범위를 0~100으로 정규화
+        // 범위를 정규화
         const ratio = (value - min) / (max - min);
         const mainDim = isVert ? height : width;
         return (ratio * mainDim) + offset
@@ -128,7 +128,8 @@ export default class ColorLegend {
 
         const mainDim = isVert ? height : width;
         const ratio = (position - offset) / mainDim;
-        return Math.round((ratio * (max - min)) + min)
+        const result = Math.round((ratio * (max - min)) + min);
+        return Math.min(max,Math.max(min,result));
     }
 
     // 그라데이션 캔버스 생성 및 그리기
@@ -192,10 +193,14 @@ export default class ColorLegend {
         labels.forEach(label => {
             const labelEl = document.createElement('div');
             labelEl.textContent = label;
+            labelEl.classList.add('cl-label-el');
             labelContainer.appendChild(labelEl);
         })
 
         this.container.appendChild(labelContainer);
+
+        // ColorLegend 객체에 업데이트
+        this.labelContainer = labelContainer;
     }
 
     // tooltip 생성
@@ -281,6 +286,28 @@ export default class ColorLegend {
         this.markerCtx.fill();
     }
 
+    // 데이터 범위로 라벨 업데이트
+    _updateLabel(items) {
+
+        // 데이터 정렬 후 최대최소 뽑기
+        const defineItems = items.map(item => String(item).padStart(2, '0')).sort().map(i => Number(i));
+        
+        // this.config.labels/min/max 재 설정
+        this.config.min = defineItems[0];
+        this.config.max = defineItems[defineItems.length - 1];
+        this.config.labels = [this.config.min, this.config.max];
+
+
+        // cl-container 초기화
+        const containerChild = Array.from(this.container.children)
+        containerChild.forEach(el => el.remove())
+        console.log(containerChild)
+
+        // cl-container 재생성
+        this._init()
+        
+    }
+
     // 데이터를 받아서 화면(container)에 표시
     render(items, targetContainer) {
         // fragment 사용하여 렌더링 성능 향상
@@ -302,6 +329,10 @@ export default class ColorLegend {
             fragment.appendChild(div)
         });
         targetContainer.appendChild(fragment);
+
+        // 라벨 업데이트(따로 지정한 라벨이 없다면)
+        if(!this.container.dataset.labels){ this._updateLabel(items) }
+
     }
 
     // 페이지 내의 지정된 클래스를 가진 모든 요소를 찾아 인스턴스화
