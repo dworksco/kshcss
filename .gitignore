@@ -2,5 +2,4 @@
 *.antigravitycli
 *.vscode
 *.gemini
-cube/docker/*.tar
-cube/docker/*.zip
+cube/docker/
