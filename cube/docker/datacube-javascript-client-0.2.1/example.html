@@ -1,0 +1,3628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataCube JavaScript SDK 예제 2</title>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Cesium.js"></script>
+    <script src="http://localhost:5003/static/js/TMSTerrainProvider.js"></script>
+    <!-- <script src="./datacube-sdk.js"></script> -->
+    <!-- <script src="./datacube-viewer.js"></script> -->
+    <script src="./datacube-sdk.js"></script>
+    <script src="./datacube-viewer.js"></script>
+    <script src="http://localhost:5003/static/js/query_timebar.js"></script>
+    <style>
+        :root {
+            --bg: #f3f5f8;
+            --panel: #ffffff;
+            --line: #d8dde6;
+            --text: #152033;
+            --muted: #64748b;
+            --primary: #0f4c81;
+            --primary-strong: #0a355a;
+            --accent: #d7862a;
+            --danger: #c2410c;
+            --success: #1f7a46;
+            --soft: #eef3f8;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #f7f9fc 0%, #edf2f7 100%); color: var(--text); font-family: "Noto Sans KR", "Segoe UI", sans-serif; }
+        body { min-height: 100vh; }
+        .page { max-width: 1380px; margin: 0 auto; padding: 24px 20px 48px; }
+        .hero {
+            background: linear-gradient(135deg, #0f4c81 0%, #103250 60%, #17212b 100%);
+            color: #fff;
+            border-radius: 20px;
+            padding: 28px 30px;
+            box-shadow: 0 24px 60px rgba(16, 50, 80, 0.22);
+            margin-bottom: 18px;
+        }
+        .hero h1 { margin: 0 0 10px; font-size: 28px; }
+        .hero p { margin: 0; max-width: 900px; color: rgba(255,255,255,0.84); line-height: 1.55; }
+        .layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+        .stack { display: grid; gap: 18px; }
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(15, 76, 129, 0.08);
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(16, 32, 51, 0.08);
+            overflow: hidden;
+        }
+        .panel-head {
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid rgba(21, 32, 51, 0.06);
+        }
+        .panel-head h2 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            color: var(--primary-strong);
+        }
+        .panel-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .panel-body { padding: 18px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .field { display: grid; gap: 6px; margin-bottom: 12px; }
+        .field label { font-size: 12px; font-weight: 700; color: #35516f; }
+        .field small { color: var(--muted); font-size: 11px; }
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            background: #fff;
+            color: var(--text);
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0f4c81;
+            box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+        }
+        .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+        .row:last-child { margin-bottom: 0; }
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-strong); }
+        .btn-secondary { background: #dbe5ef; color: #15304f; }
+        .btn-secondary:hover { background: #cdd9e5; }
+        .btn-soft { background: #f4efe7; color: #87541b; }
+        .btn-soft:hover { background: #ecdfca; }
+        .btn-danger { background: #fce7e2; color: var(--danger); }
+        .btn-danger:hover { background: #f7d5cc; }
+        .btn-wide { width: 100%; justify-content: center; display: inline-flex; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 6px 11px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .status-idle { background: #fff3cd; color: #8a5a00; }
+        .status-ok { background: #dcfce7; color: #166534; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        .help-box {
+            background: var(--soft);
+            border: 1px solid #dbe7f4;
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #42556c;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+        .tabbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .tab-btn {
+            border: 1px solid #d4deea;
+            background: #fff;
+            color: #32506f;
+            padding: 9px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #0f4c81;
+            border-color: #0f4c81;
+            color: #fff;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .upload-zone {
+            border: 1.5px dashed #9cb4cd;
+            background: linear-gradient(180deg, #f9fbfe 0%, #f1f6fb 100%);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.12s ease, background 0.12s ease;
+        }
+        .upload-zone.active {
+            border-color: #0f4c81;
+            background: #e9f2fb;
+        }
+        .upload-zone h4 { margin: 0 0 8px; font-size: 15px; color: #143755; }
+        .upload-zone p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+        .upload-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+        .file-summary {
+            margin-top: 10px;
+            border: 1px solid #e0e8f1;
+            border-radius: 12px;
+            background: #fbfcfe;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #40556d;
+        }
+        .file-summary ul { margin: 8px 0 0; padding-left: 18px; max-height: 128px; overflow: auto; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #dbe5ef;
+            background: #fff;
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #36506b;
+            cursor: pointer;
+        }
+        .radio-group input { width: auto; }
+        .mini-table-wrap { overflow: auto; margin: 12px 0; border: 1px solid #e0e8f1; border-radius: 12px; }
+        .mini-table { width: 100%; min-width: 920px; border-collapse: collapse; font-size: 12px; background: #fff; }
+        .mini-table th, .mini-table td { border-bottom: 1px solid #e8eef5; padding: 8px; text-align: left; vertical-align: top; }
+        .mini-table th { background: #f6f9fc; color: #35516f; font-weight: 800; }
+        .mini-table tr:last-child td { border-bottom: 0; }
+        .mini-table input, .mini-table select { padding: 7px 8px; font-size: 12px; border-radius: 8px; }
+        .preview-table { width: 100%; border-collapse: collapse; font-size: 11px; background: #fff; }
+        .preview-table th, .preview-table td { border: 1px solid #e0e8f1; padding: 5px 6px; text-align: left; }
+        .preview-table th { background: #f6f9fc; color: #35516f; }
+        .job-card {
+            background: linear-gradient(180deg, #f6f9fc 0%, #edf4fb 100%);
+            border: 1px solid #d7e3ef;
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 14px;
+        }
+        .job-card strong { color: var(--primary-strong); }
+        pre {
+            margin: 0;
+            padding: 14px;
+            border-radius: 14px;
+            background: #111926;
+            color: #dbe7ff;
+            font-size: 12px;
+            line-height: 1.55;
+            overflow: auto;
+            max-height: 280px;
+        }
+        #viewerCanvas { width: 100%; height: clamp(520px, calc(100vh - 260px), 760px); border-radius: 16px; overflow: hidden; border: 1px solid #d4deea; background: #dfe8f2; }
+        #viewerCanvas .cesium-widget-credits { display: none !important; }
+        .cesium-viewer-bottom { display: none !important; }
+        .viewer-canvas-shell {
+            position: relative;
+            width: 100%;
+        }
+        #viewerStyleBar {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(620px, calc(100% - 32px));
+            z-index: 245;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e0e5ec;
+            border-radius: 8px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+        }
+        .viewer-style-grid {
+            display: grid;
+            grid-template-columns: 106px 78px 104px minmax(190px, 1fr);
+            gap: 8px;
+            align-items: end;
+        }
+        .viewer-style-sliders {
+            display: grid;
+            gap: 6px;
+        }
+        .viewer-slider-row {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr) 38px;
+            gap: 2px;
+            align-items: center;
+        }
+        .viewer-slider-row label {
+            color: #34495f;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .viewer-slider-row span {
+            color: #52677d;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+            text-align: right;
+        }
+        #viewerStyleBar .field {
+            gap: 4px;
+            margin-bottom: 0;
+        }
+        #viewerStyleBar .field label {
+            color: #34495f;
+            font-size: 11px;
+            line-height: 1.2;
+        }
+        #viewerStyleBar input,
+        #viewerStyleBar select {
+            height: 32px;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        #viewerStyleBar input[type="range"] {
+            height: 18px;
+            padding: 0;
+            accent-color: #0f4c81;
+        }
+        #viewerStyleBar input[type="color"] {
+            padding: 3px;
+        }
+        #viewerStyleBar .viewer-toggle {
+            height: 32px;
+            width: 100%;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        #viewerStyleBar .viewer-toggle.active {
+            background: #0f4c81;
+            color: #fff;
+        }
+        #timeseriesBar {
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 24px;
+            width: min(760px, calc(100% - 32px));
+            min-width: 360px;
+            z-index: 240;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e0e5ec;
+            border-radius: 8px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+            font-size: 12px;
+        }
+        #timeseriesBar .btn {
+            border-radius: 4px;
+            font-weight: 600;
+            transform: none;
+            line-height: 1.4;
+        }
+        #timeseriesBar .btn-sm {
+            font-size: 12px;
+        }
+        #timeseriesBar .btn-outline-secondary {
+            background: #fff;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+        #timeseriesBar .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: #fff;
+        }
+        #timeseriesBar .form-select-sm {
+            border-radius: 4px;
+            padding: 3px 22px 3px 8px;
+            height: auto;
+        }
+        #timeseriesBar .btn-close {
+            width: 20px;
+            height: 20px;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            opacity: 0.65;
+            position: relative;
+        }
+        #timeseriesBar .btn-close::before {
+            content: "x";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 15px;
+            color: #333;
+        }
+        #viewerJsonLegend {
+            display: none;
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            z-index: 210;
+            background: rgba(10, 18, 30, 0.86);
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: 10px;
+            box-shadow: 0 8px 22px rgba(15, 32, 51, 0.26);
+            font-size: 12px;
+            min-width: 82px;
+        }
+        #viewerJsonLegend canvas { width: 22px; height: 144px; border-radius: 4px; display: block; }
+        .viewer-json-legend-title { font-weight: 800; margin-bottom: 8px; text-align: center; }
+        .viewer-json-legend-body { display: flex; gap: 8px; align-items: stretch; }
+        .viewer-json-legend-labels { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; }
+        #viewerPointControls {
+            display: none;
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            z-index: 220;
+            width: min(520px, calc(100% - 28px));
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #d9e3ee;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 22px rgba(15, 32, 51, 0.16);
+            font-size: 12px;
+        }
+        .viewer-point-control-grid { display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
+        #viewerPointControls select, #viewerPointControls input { padding: 7px 8px; border-radius: 8px; font-size: 12px; }
+        #viewerFeaturePopup {
+            display: none;
+            position: absolute;
+            z-index: 230;
+            background: rgba(8, 14, 24, 0.92);
+            color: #fff;
+            border: 1px solid rgba(148, 190, 235, 0.42);
+            border-radius: 10px;
+            padding: 12px 14px;
+            max-width: 320px;
+            font-size: 12px;
+            line-height: 1.65;
+            box-shadow: 0 10px 24px rgba(15, 32, 51, 0.28);
+            pointer-events: none;
+        }
+        @media (max-width: 900px) {
+            #timeseriesBar {
+                left: 12px;
+                right: 12px;
+                transform: none;
+                width: auto;
+                min-width: 0;
+            }
+            .viewer-point-control-grid { grid-template-columns: 1fr; }
+        }
+        .viewer-workbench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 380px); gap: 16px; align-items: start; }
+        .viewer-controls {
+            min-width: 0;
+        }
+        .viewer-map-area {
+            position: sticky;
+            top: 16px;
+            min-width: 0;
+        }
+        .viewer-load-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; margin-bottom: 12px; }
+        .viewer-load-row .field { margin-bottom: 0; }
+        .viewer-action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+        .viewer-action-grid .btn { width: 100%; }
+        .viewer-panel-block {
+            border: 1px solid #e0e8f1;
+            border-radius: 12px;
+            background: #fbfcfe;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .viewer-panel-block > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 11px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #103250;
+            background: #f6f9fc;
+            border-bottom: 1px solid #e8eef5;
+        }
+        .viewer-panel-block > summary::-webkit-details-marker { display: none; }
+        .viewer-panel-block > summary::after { content: "열기"; float: right; color: var(--muted); font-size: 11px; font-weight: 700; }
+        .viewer-panel-block[open] > summary::after { content: "접기"; }
+        .viewer-panel-body { padding: 12px; }
+        .viewer-panel-body .grid-2, .viewer-panel-body .grid-3, .viewer-panel-body .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .viewer-panel-body .row { gap: 8px; }
+        .viewer-log-wrap { margin-top: 12px; }
+        .viewer-log-wrap pre { max-height: 220px; }
+        .viewer-coord-panel { margin-top: 12px; }
+        .viewer-coord-panel .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .viewer-coord-panel .viewer-action-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .viewer-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: end; }
+        .muted { color: var(--muted); }
+        .checkbox-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #36506b;
+            margin-top: 8px;
+        }
+        .checkbox-line input { width: auto; }
+        .section-title {
+            margin: 18px 0 10px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #103250;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        @media (max-width: 1120px) {
+            .layout { grid-template-columns: 1fr; }
+            .viewer-workbench { grid-template-columns: 1fr; }
+            .viewer-map-area { position: static; }
+            .viewer-map-area { order: -1; }
+            #viewerCanvas { height: 480px; }
+        }
+        @media (max-width: 720px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .viewer-coord-panel .grid-4, .viewer-coord-panel .viewer-action-grid { grid-template-columns: 1fr; }
+            #viewerStyleBar {
+                top: 10px;
+                width: calc(100% - 20px);
+                padding: 8px;
+            }
+            .viewer-style-grid {
+                grid-template-columns: 104px 76px 100px minmax(150px, 1fr);
+                gap: 6px;
+            }
+            .viewer-slider-row {
+                grid-template-columns: 68px minmax(0, 1fr) 34px;
+            }
+            .hero { padding: 22px 20px; }
+            .page { padding: 16px 12px 32px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="hero">
+        <h1>DataCube JavaScript SDK 예제</h1>
+        <p>브라우저에서 바로 API를 확인하고, 3D Tiles/LAS/TIF/Cube/SHP/JSON 업로드부터 생성 job 제출, 레이어 확인, 뷰어 테스트까지</p>
+        <p>한 화면에서 처리할 수 있도록 구성한 한국어 예제입니다.</p>
+    </div>
+
+    <div class="layout">
+        <div class="stack">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>연결 설정</h2>
+                    <p>서버 주소와 API Key를 입력한 뒤 연결 상태를 먼저 확인하세요.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="field">
+                        <label for="serverUrl">서버 주소</label>
+                        <input type="text" id="serverUrl" value="http://localhost:5003">
+                    </div>
+                    <div class="field">
+                        <label for="apiKey">API Key</label>
+                        <input type="text" id="apiKey" placeholder="dcube_...">
+                    </div>
+                    <div class="row">
+                        <button class="btn btn-primary" onclick="connectWithKey()">연결 확인</button>
+                        <span id="connStatus" class="status-badge status-idle">연결 전</span>
+                    </div>
+                    <pre id="authLog">서버 주소와 API Key를 입력한 뒤 "연결 확인"을 눌러주세요.</pre>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>레이어 / 작업 조회</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <button class="btn btn-primary" onclick="listLayers()">레이어 목록</button>
+                        <button class="btn btn-secondary" onclick="listTilesets()">타일셋 목록</button>
+                        <button class="btn btn-soft" onclick="listCreateJobs()">생성 작업 목록</button>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="layerNameInput">레이어 이름</label>
+                            <input type="text" id="layerNameInput" placeholder="예: building_bit">
+                        </div>
+                        <div class="field">
+                            <label for="jobIdInput">Job ID</label>
+                            <input type="text" id="jobIdInput" placeholder="예: create_xxxxx">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <button class="btn btn-secondary" onclick="getLayerDetail()">레이어 상세</button>
+                        <button class="btn btn-secondary" onclick="getLayerStats()">레이어 통계</button>
+                        <button class="btn btn-secondary" onclick="checkLayerName()">이름 중복 확인</button>
+                        <button class="btn btn-secondary" onclick="getCreateJobStatus()">Job 상태 조회</button>
+                        <button class="btn btn-secondary" onclick="waitCreateJob()">Job 완료 대기</button>
+                        <button class="btn btn-danger" onclick="cancelCreateJob()">Job 취소</button>
+                        <button class="btn btn-danger" onclick="deleteCreateJob()">Job 삭제</button>
+                    </div>
+                    <div class="section-title">레이어 병합</div>
+                    <div class="grid-3">
+                        <div class="field">
+                            <label for="mergeLayerName">새 레이어 이름</label>
+                            <input type="text" id="mergeLayerName" placeholder="예: merged_demo">
+                        </div>
+                        <div class="field">
+                            <label for="mergeSourceLayers">원본 레이어 목록</label>
+                            <input type="text" id="mergeSourceLayers" placeholder="layer_a, layer_b">
+                        </div>
+                        <div class="field">
+                            <label for="mergeTileLevel">최대 병합 레벨</label>
+                            <input type="number" id="mergeTileLevel" placeholder="예: 10">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <button class="btn btn-secondary" onclick="validateMerge()">병합 검증</button>
+                        <button class="btn btn-primary" onclick="submitMerge()">병합 job 제출</button>
+                    </div>
+                    <pre id="infoLog">레이어 목록, 타일셋 목록, 생성 작업 목록 결과가 여기에 표시됩니다.</pre>
+                </div>
+            </section>
+        </div>
+
+        <div class="stack">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>데이터 생성</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="grid-3">
+                        <div class="field">
+                            <label for="createTilesetName">타일셋 이름</label>
+                            <input type="text" id="createTilesetName" placeholder="예: seoul_building_demo">
+                        </div>
+                        <div class="field">
+                            <label for="createDescription">설명</label>
+                            <input type="text" id="createDescription" placeholder="선택 입력">
+                        </div>
+                        <div class="field">
+                            <label>공개 여부</label>
+                            <label class="checkbox-line">
+                                <input type="checkbox" id="createIsPublic">
+                                공개 데이터로 저장
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="tabbar">
+                        <button class="tab-btn active" data-tab="tab-tiles3d" onclick="switchCreateTab('tab-tiles3d', this)">3D Tiles</button>
+                        <button class="tab-btn" data-tab="tab-las" onclick="switchCreateTab('tab-las', this)">LAS</button>
+                        <button class="tab-btn" data-tab="tab-tif" onclick="switchCreateTab('tab-tif', this)">TIF</button>
+                        <button class="tab-btn" data-tab="tab-netcdf" onclick="switchCreateTab('tab-netcdf', this)">NetCDF</button>
+                        <button class="tab-btn" data-tab="tab-cube" onclick="switchCreateTab('tab-cube', this)">Cube</button>
+                        <button class="tab-btn" data-tab="tab-shp" onclick="switchCreateTab('tab-shp', this)">SHP</button>
+                        <button class="tab-btn" data-tab="tab-json-csv" onclick="switchCreateTab('tab-json-csv', this)">JSON/CSV</button>
+                    </div>
+
+                    <div class="tab-pane active" id="tab-tiles3d">
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('tiles3dFiles')">파일 선택</button>
+                            <button class="btn btn-soft" onclick="pickFiles('tiles3dFolder')">폴더 선택</button>
+                        </div>
+                        <div class="upload-zone" id="tiles3dDropZone" onclick="pickFiles('tiles3dFiles')">
+                            <h4>3D Tiles 입력 업로드</h4>
+                            <p>일반 생성은 GLB/B3DM/zip을 지원합니다. Voxelizer 생성은 `tileset.json + 하위 content 파일 전체` 또는 동일 구조의 zip이 필요합니다.<br>파일 드래그 앤 드롭도 지원합니다.</p>
+                            <input type="file" id="tiles3dFiles" multiple accept=".zip,.json,.glb,.gltf,.bin,.png,.jpg,.jpeg,.webp,.ktx2" hidden>
+                            <input type="file" id="tiles3dFolder" webkitdirectory directory multiple hidden>
+                        </div>
+                        <div id="tiles3dUploadStatus" class="file-summary muted">아직 업로드된 3D Tiles 파일이 없습니다.</div>
+
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="tiles3dMaxLevel">최대 레벨</label>
+                                <input type="number" id="tiles3dMaxLevel" value="16" min="0" max="24">
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dValueType">값 유형</label>
+                                <select id="tiles3dValueType">
+                                    <option value="bit" selected>bit</option>
+                                    <option value="byte">byte</option>
+                                    <option value="short">short</option>
+                                    <option value="int">int</option>
+                                    <option value="float">float</option>
+                                    <option value="double">double</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dAttrField">속성 필드</label>
+                                <select id="tiles3dAttrField" onchange="onTiles3dAttrFieldChange()">
+                                    <option value="">(없음 - 점유 모드)</option>
+                                </select>
+                                <small>B3DM batch table 속성이 업로드 시 자동 감지됩니다.</small>
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dAggregation">충돌 해결</label>
+                                <select id="tiles3dAggregation">
+                                    <option value="first" selected>먼저 값 우선</option>
+                                    <option value="last">나중 값 우선</option>
+                                    <option value="majority">다수결</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dVoxelResolution">래스터 해상도</label>
+                                <select id="tiles3dVoxelResolution">
+                                    <option value="64" selected>64</option>
+                                    <option value="128">128</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="tiles3dSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dMinContentLevel">최소 콘텐츠 레벨</label>
+                                <input type="number" id="tiles3dMinContentLevel" value="0" min="0">
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dTileHeight">0레벨 큐브 높이(m)</label>
+                                <input type="number" id="tiles3dTileHeight" value="4000000">
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dSampleFactor">샘플 밀도</label>
+                                <input type="number" id="tiles3dSampleFactor" value="1.5" min="0.5" max="10" step="0.5">
+                            </div>
+                            <div class="field">
+                                <label for="tiles3dWorkers">워커 수</label>
+                                <input type="number" id="tiles3dWorkers" placeholder="비우면 서버 기본값">
+                            </div>
+                        </div>
+                        <div id="tiles3dAttrMappingWrap" class="file-summary" style="display:none"></div>
+
+                        <div class="grid-2">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreate3DTiles()">생성 job 제출</button>
+                            <button class="btn btn-secondary btn-wide" onclick="submitCreateVoxelizer3DTiles()">Voxelizer 생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-las">
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('lasFiles')">LAS 파일 선택</button>
+                        </div>
+                        <div class="upload-zone" id="lasDropZone" onclick="pickFiles('lasFiles')">
+                            <h4>LAS / LAZ 업로드</h4>
+                            <p>점군 파일 `.las`, `.laz`를 선택하세요. 업로드 결과의 `detected_crs`는 자동으로 표시됩니다.</p>
+                            <input type="file" id="lasFiles" accept=".las,.laz" hidden>
+                        </div>
+                        <div id="lasUploadStatus" class="file-summary muted">아직 업로드된 LAS 파일이 없습니다.</div>
+
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="lasMaxLevel">최대 레벨</label>
+                                <input type="number" id="lasMaxLevel" value="16" min="0" max="24">
+                            </div>
+                            <div class="field">
+                                <label for="lasSourceCrs">원본 CRS</label>
+                                <input type="text" id="lasSourceCrs" value="EPSG:4326" placeholder="예: EPSG:5186">
+                            </div>
+                            <div class="field">
+                                <label for="lasValueType">값 유형</label>
+                                <select id="lasValueType">
+                                    <option value="bit" selected>bit</option>
+                                    <option value="byte">byte</option>
+                                    <option value="short">short</option>
+                                    <option value="int">int</option>
+                                    <option value="float">float</option>
+                                    <option value="double">double</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="lasVoxelResolution">래스터 해상도</label>
+                                <select id="lasVoxelResolution">
+                                    <option value="64" selected>64</option>
+                                    <option value="128">128</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="lasSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="lasSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                            <div class="field">
+                                <label for="lasMinContentLevel">최소 콘텐츠 레벨</label>
+                                <input type="number" id="lasMinContentLevel" value="0" min="0">
+                            </div>
+                            <div class="field">
+                                <label for="lasTileHeight">0레벨 큐브 높이(m)</label>
+                                <input type="number" id="lasTileHeight" value="4000000">
+                            </div>
+                            <div class="field">
+                                <label for="lasWorkers">워커 수</label>
+                                <input type="number" id="lasWorkers" placeholder="비우면 서버 기본값">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateLas()">생성 job 제출</button>
+                            <button class="btn btn-secondary btn-wide" onclick="submitCreateVoxelizerLas()">Voxelizer 생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-tif">
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('tifFiles')">TIF 파일 선택</button>
+                        </div>
+                        <div class="upload-zone" id="tifDropZone" onclick="pickFiles('tifFiles')">
+                            <h4>TIF 업로드</h4>
+                            <p>`.tif`, `.tiff` 여러 파일 업로드를 지원합니다. 업로드 후 `input_dir`와 `input_files`를 함께 사용합니다.</p>
+                            <input type="file" id="tifFiles" accept=".tif,.tiff" multiple hidden>
+                        </div>
+                        <div id="tifUploadStatus" class="file-summary muted">아직 업로드된 TIF 파일이 없습니다.</div>
+
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="tifMaxLevel">최대 레벨</label>
+                                <input type="number" id="tifMaxLevel" value="16" min="0" max="24">
+                            </div>
+                            <div class="field">
+                                <label for="tifSourceCrs">원본 CRS</label>
+                                <input type="text" id="tifSourceCrs" value="EPSG:4326" placeholder="예: EPSG:5186">
+                            </div>
+                            <div class="field">
+                                <label for="tifValueType">값 유형</label>
+                                <select id="tifValueType">
+                                    <option value="float" selected>float</option>
+                                    <option value="bit">bit</option>
+                                    <option value="byte">byte</option>
+                                    <option value="short">short</option>
+                                    <option value="int">int</option>
+                                    <option value="double">double</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tifVoxelResolution">래스터 해상도</label>
+                                <select id="tifVoxelResolution">
+                                    <option value="64" selected>64</option>
+                                    <option value="128">128</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tifSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="tifSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                            <div class="field">
+                                <label for="tifTileHeight">0레벨 큐브 높이(m)</label>
+                                <input type="number" id="tifTileHeight" value="4000000">
+                            </div>
+                            <div class="field">
+                                <label for="tifWorkers">워커 수</label>
+                                <input type="number" id="tifWorkers" placeholder="비우면 서버 기본값">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateTif()">생성 job 제출</button>
+                            <button class="btn btn-secondary btn-wide" onclick="submitCreateVoxelizerTif()">Voxelizer 생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-netcdf">
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('netcdfFiles')">파일 선택</button>
+                            <button class="btn btn-soft" onclick="pickFiles('netcdfFolder')">폴더 선택</button>
+                        </div>
+                        <div class="upload-zone" id="netcdfDropZone" onclick="pickFiles('netcdfFiles')">
+                            <h4>NetCDF / GRIB2 업로드</h4>
+                            <p>`.gb2`, `.grib2`, `.grb`, `.nc`, `.nc4`, `.cdf` 또는 `.zip`을 업로드합니다.<br>시계열 배치는 폴더 구조나 zip 내부 경로를 유지합니다.</p>
+                            <input type="file" id="netcdfFiles" multiple accept=".zip,.gb2,.grib2,.grb,.grb2,.nc,.nc4,.cdf" hidden>
+                            <input type="file" id="netcdfFolder" webkitdirectory directory multiple hidden>
+                        </div>
+                        <div id="netcdfUploadStatus" class="file-summary muted">아직 업로드된 NetCDF/GRIB2 파일이 없습니다.</div>
+
+                        <div class="section-title">생성 모드</div>
+                        <div class="radio-group">
+                            <label><input type="radio" name="netcdfMode" value="single" checked onchange="toggleNetcdfMode()"> 단일 생성</label>
+                            <label><input type="radio" name="netcdfMode" value="batch" onchange="toggleNetcdfMode()"> 시계열 배치</label>
+                        </div>
+                        <div id="netcdfSinglePanel">
+                            <div class="radio-group">
+                                <label><input type="radio" name="netcdfDataType" value="wind" checked onchange="toggleNetcdfMode()"> 바람 U/V</label>
+                                <label><input type="radio" name="netcdfDataType" value="scalar" onchange="toggleNetcdfMode()"> 스칼라</label>
+                            </div>
+                            <div class="grid-3">
+                                <div class="field netcdf-wind-field">
+                                    <label for="netcdfUSelect">U 성분 파일</label>
+                                    <select id="netcdfUSelect"><option value="">업로드 후 선택</option></select>
+                                </div>
+                                <div class="field netcdf-wind-field">
+                                    <label for="netcdfVSelect">V 성분 파일</label>
+                                    <select id="netcdfVSelect"><option value="">업로드 후 선택</option></select>
+                                </div>
+                                <div class="field netcdf-scalar-field" style="display:none">
+                                    <label for="netcdfScalarSelect">스칼라 파일</label>
+                                    <select id="netcdfScalarSelect"><option value="">업로드 후 선택</option></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="netcdfBatchPanel" style="display:none">
+                            <div class="help-box">배치 모드는 업로드된 `upload_dir` 전체를 처리합니다. 동일 기압 U/V 파일쌍 또는 스칼라 시계열 파일이 같은 업로드 폴더 아래에 있어야 합니다.</div>
+                        </div>
+
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="netcdfPressure">기압(hPa)</label>
+                                <input type="number" id="netcdfPressure" value="1000" min="1">
+                            </div>
+                            <div class="field">
+                                <label for="netcdfMaxLevel">최대 레벨</label>
+                                <input type="number" id="netcdfMaxLevel" value="3" min="0" max="24">
+                            </div>
+                            <div class="field">
+                                <label for="netcdfVoxelResolution">래스터 해상도</label>
+                                <select id="netcdfVoxelResolution">
+                                    <option value="64" selected>64</option>
+                                    <option value="128">128</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="netcdfValueType">값 유형</label>
+                                <select id="netcdfValueType">
+                                    <option value="float" selected>float</option>
+                                    <option value="double">double</option>
+                                    <option value="int">int</option>
+                                    <option value="short">short</option>
+                                    <option value="byte">byte</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="netcdfDataHeight">데이터 높이(m)</label>
+                                <input type="number" id="netcdfDataHeight" placeholder="단일 모드 자동">
+                            </div>
+                            <div class="field">
+                                <label for="netcdfTileHeight">0레벨 큐브 높이(m)</label>
+                                <input type="number" id="netcdfTileHeight" value="4000000">
+                            </div>
+                            <div class="field">
+                                <label for="netcdfSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="netcdfSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                            <div class="field">
+                                <label for="netcdfWorkers">워커 수</label>
+                                <input type="number" id="netcdfWorkers" placeholder="비우면 서버 기본값">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateNetcdf()">NetCDF 생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-cube">
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('cubeFiles')">파일 선택</button>
+                            <button class="btn btn-soft" onclick="pickFiles('cubeFolder')">폴더 선택</button>
+                        </div>
+                        <div class="upload-zone" id="cubeDropZone" onclick="pickFiles('cubeFiles')">
+                            <h4>Cube 결과 업로드</h4>
+                            <p>`.bdc`, `.adc`, `voxelset.json` 파일이 들어있는 폴더 전체 또는 이를 묶은 `.zip`을 올리세요.</p>
+                            <input type="file" id="cubeFiles" multiple accept=".zip,.bdc,.adc,.json" hidden>
+                            <input type="file" id="cubeFolder" webkitdirectory directory multiple hidden>
+                        </div>
+                        <div id="cubeUploadStatus" class="file-summary muted">아직 업로드된 Cube 파일이 없습니다.</div>
+
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-2">
+                            <div class="field">
+                                <label for="cubeSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="cubeSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateCube()">Cube 등록 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-shp">
+                        <div class="radio-group">
+                            <label><input type="radio" name="shpType" value="building" checked> 건물</label>
+                            <label><input type="radio" name="shpType" value="point_type"> 점유형</label>
+                            <label><input type="radio" name="shpType" value="other"> 기타</label>
+                        </div>
+                        <div class="upload-actions">
+                            <button class="btn btn-secondary" onclick="pickFiles('shpFiles')">SHP 파일 선택</button>
+                            <button class="btn btn-secondary" onclick="pickFiles('demFile')">DEM 선택</button>
+                        </div>
+                        <div class="upload-zone" id="shpDropZone" onclick="pickFiles('shpFiles')">
+                            <h4>SHP 업로드</h4>
+                            <p>`.shp/.shx/.dbf/.prj` 세트 또는 `.zip`을 업로드합니다. 여러 SHP 세트는 Application Datacube로 제출합니다.</p>
+                            <input type="file" id="shpFiles" multiple accept=".zip,.shp,.shx,.dbf,.prj,.cpg,.qmd" hidden>
+                            <input type="file" id="demFile" accept=".tif,.tiff" hidden>
+                        </div>
+                        <div id="shpUploadStatus" class="file-summary muted">아직 업로드된 SHP 파일이 없습니다.</div>
+                        <div id="demUploadStatus" class="file-summary muted">DEM은 선택 사항입니다.</div>
+                        <div id="shpPerFilePanels"></div>
+                        <div class="section-title">파라미터 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="shpHeightField">높이 필드</label>
+                                <select id="shpHeightField">
+                                    <option value="height">height</option>
+                                    <option value="__custom__">사용자 입력</option>
+                                </select>
+                                <input type="number" id="shpHeightCustom" placeholder="높이(m)" style="display:none">
+                            </div>
+                            <div class="field">
+                                <label for="shpZField">지형고도 필드</label>
+                                <select id="shpZField">
+                                    <option value="zvalue">zvalue</option>
+                                    <option value="__custom__">사용자 입력</option>
+                                    <option value="__default_dem__">기본 DEM</option>
+                                    <option value="__dem__">DEM 파일</option>
+                                </select>
+                                <input type="number" id="shpZCustom" placeholder="고도(m)" style="display:none">
+                            </div>
+                            <div class="field">
+                                <label for="shpValueType">값 유형</label>
+                                <select id="shpValueType">
+                                    <option value="bit">bit</option>
+                                    <option value="byte">byte</option>
+                                    <option value="short">short</option>
+                                    <option value="int">int</option>
+                                    <option value="float">float</option>
+                                    <option value="double">double</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="shpValueField">값 필드</label>
+                                <select id="shpValueField">
+                                    <option value="">(없음 = point_type)</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="shpAggregation">집계 방식</label>
+                                <select id="shpAggregation">
+                                    <option value="max">max</option>
+                                    <option value="min">min</option>
+                                    <option value="avg">avg</option>
+                                    <option value="custom">custom</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="shpMaxLevel">최대 레벨</label>
+                                <input type="number" id="shpMaxLevel" value="16" min="0" max="22">
+                            </div>
+                            <div class="field">
+                                <label>채우기</label>
+                                <label class="checkbox-line">
+                                    <input type="checkbox" id="shpFillSolid" checked>
+                                    내부 채움
+                                </label>
+                            </div>
+                            <div class="field shp-point-type-only" style="display:none">
+                                <label for="shpPointDiameter">포인트 직경(m)</label>
+                                <input type="number" id="shpPointDiameter" placeholder="예: 1">
+                            </div>
+                        </div>
+                        <div class="section-title">고급 설정</div>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="shpTileHeight">0레벨 큐브 높이(m)</label>
+                                <input type="number" id="shpTileHeight" value="4000000">
+                            </div>
+                            <div class="field">
+                                <label for="shpRasterResolution">래스터 해상도</label>
+                                <select id="shpRasterResolution">
+                                    <option value="64" selected>64</option>
+                                    <option value="128">128</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="shpSubtreeLevels">서브트리 레벨</label>
+                                <input type="number" id="shpSubtreeLevels" value="3" min="1" max="10">
+                            </div>
+                            <div class="field">
+                                <label for="shpMinContentLevel">최소 콘텐츠 레벨</label>
+                                <input type="number" id="shpMinContentLevel" value="0" min="0">
+                            </div>
+                            <div class="field">
+                                <label for="shpWorkers">워커 수</label>
+                                <input type="number" id="shpWorkers" placeholder="비우면 서버 기본값">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateShp()">생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-json-csv">
+                        <div class="radio-group">
+                            <label><input type="radio" name="statsMode" value="point" checked onchange="toggleStatsMode()"> 좌표 데이터</label>
+                            <label><input type="radio" name="statsMode" value="admin" onchange="toggleStatsMode()"> 행정구역 경계 생성</label>
+                            <label><input type="radio" name="statsMode" value="stats" onchange="toggleStatsMode()"> 통계 데이터</label>
+                        </div>
+                        <div id="statsPointPanel">
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="pointTileLevel">타일 레벨</label>
+                                    <select id="pointTileLevel">
+                                        <option value="7">Level 7</option>
+                                        <option value="8" selected>Level 8</option>
+                                        <option value="9">Level 9</option>
+                                        <option value="10">Level 10</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="upload-actions">
+                                <button class="btn btn-secondary" onclick="pickFiles('pointCsvInput')">좌표 CSV 선택</button>
+                            </div>
+                            <div class="upload-zone" id="pointCsvZone" onclick="pickFiles('pointCsvInput')">
+                                <h4>좌표 CSV 업로드</h4>
+                                <p>필수: longitude, latitude, 값 컬럼 1개 이상. 선택: station_id, station_name, datetime, elevation.</p>
+                                <input type="file" id="pointCsvInput" accept=".csv" hidden>
+                            </div>
+                            <div id="pointCsvStatus" class="file-summary muted">아직 업로드된 좌표 CSV 파일이 없습니다.</div>
+                            <div id="pointDetectedInfo" class="file-summary" style="display:none"></div>
+                            <div id="pointCsvPreview" class="file-summary" style="display:none"></div>
+                            <button class="btn btn-primary btn-wide" onclick="submitCreatePoint()">좌표 데이터 생성 job 제출</button>
+                        </div>
+                        <div id="statsAdminPanel" style="display:none">
+                            <div class="upload-actions">
+                                <button class="btn btn-secondary" onclick="pickFiles('statsGeojsonInput')">GeoJSON 선택</button>
+                            </div>
+                            <div class="upload-zone" id="statsGeojsonZone" onclick="pickFiles('statsGeojsonInput')">
+                                <h4>행정구역 GeoJSON 업로드</h4>
+                                <p>시도/시군구/읍면동 경계 `.geojson`, `.json` 파일을 업로드합니다.</p>
+                                <input type="file" id="statsGeojsonInput" accept=".geojson,.json" hidden>
+                            </div>
+                            <div id="statsGeojsonStatus" class="file-summary muted">아직 업로드된 GeoJSON 파일이 없습니다.</div>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="statsAdminLevel">행정 레벨</label>
+                                    <select id="statsAdminLevel">
+                                        <option value="sido">시도</option>
+                                        <option value="sigungu">시군구</option>
+                                        <option value="emd">읍면동</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateAdmin()">행정구역 생성 job 제출</button>
+                        </div>
+                        <div id="statsDataPanel" style="display:none">
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="statsBaseLayer">기준 레이어</label>
+                                    <select id="statsBaseLayer">
+                                        <option value="">-- 행정구역 레이어 선택 --</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>&nbsp;</label>
+                                    <button class="btn btn-secondary btn-wide" onclick="loadStatsBaseLayers()">기준 레이어 새로고침</button>
+                                </div>
+                            </div>
+                            <div class="upload-actions">
+                                <button class="btn btn-secondary" onclick="pickFiles('statsCsvInput')">통계 CSV 선택</button>
+                            </div>
+                            <div class="upload-zone" id="statsCsvZone" onclick="pickFiles('statsCsvInput')">
+                                <h4>통계 CSV 업로드</h4>
+                                <p>행정구역 코드와 통계값을 포함한 UTF-8 CSV 파일을 업로드합니다.</p>
+                                <input type="file" id="statsCsvInput" accept=".csv" hidden>
+                            </div>
+                            <div id="statsCsvStatus" class="file-summary muted">아직 업로드된 통계 CSV 파일이 없습니다.</div>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="statsJoinKey">조인 키 컬럼</label>
+                                    <select id="statsJoinKey">
+                                        <option value="code">code</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="statsCsvPreview" class="file-summary" style="display:none"></div>
+                            <button class="btn btn-primary btn-wide" onclick="submitCreateStats()">통계 데이터 생성 job 제출</button>
+                        </div>
+                    </div>
+
+                    <div id="createJobCard" class="job-card" style="display:none"></div>
+                    <pre id="createLog">업로드와 생성 결과가 여기에 표시됩니다.</pre>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>뷰어 / 시각화 테스트</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="viewer-workbench">
+                        <div class="viewer-map-area">
+                            <div class="viewer-canvas-shell">
+                                <div id="viewerCanvas"></div>
+                                <div id="viewerStyleBar">
+                                    <div class="viewer-style-grid">
+                                        <div class="field"><label for="viewerColormapToggle">컬러맵</label><button type="button" id="viewerColormapToggle" class="btn btn-secondary viewer-toggle active" data-enabled="true" aria-pressed="true">ON</button></div>
+                                        <div class="field"><label for="viewerSolidColor">단색</label><input type="color" id="viewerSolidColor" value="#6699ff"></div>
+                                        <div class="field"><label for="viewerHeightOffset">높이 보정(m)</label><input type="number" id="viewerHeightOffset" value="0" step="1"></div>
+                                        <div class="viewer-style-sliders">
+                                            <div class="viewer-slider-row">
+                                                <label for="viewerOpacity">투명도</label>
+                                                <input type="range" id="viewerOpacity" min="0" max="100" step="1" value="100">
+                                                <span id="viewerOpacityLabel">100%</span>
+                                            </div>
+                                            <div class="viewer-slider-row">
+                                                <label for="viewerTerrainOpacity">지형 투명도</label>
+                                                <input type="range" id="viewerTerrainOpacity" min="0" max="100" step="1" value="100">
+                                                <span id="viewerTerrainOpacityLabel">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="timeseriesBar"></div>
+                                <div id="viewerJsonLegend">
+                                    <div class="viewer-json-legend-title" id="viewerJsonLegendTitle"></div>
+                                    <div class="viewer-json-legend-body">
+                                        <canvas id="viewerJsonLegendCanvas" width="24" height="144"></canvas>
+                                        <div class="viewer-json-legend-labels">
+                                            <span id="viewerJsonLegendMax"></span>
+                                            <span id="viewerJsonLegendMid"></span>
+                                            <span id="viewerJsonLegendMin"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="viewerPointControls"></div>
+                                <div id="viewerFeaturePopup"></div>
+                            </div>
+                            <div class="viewer-log-wrap">
+                                <pre id="viewerLog">뷰어 초기화 후 tileset 로드 결과가 여기에 표시됩니다.</pre>
+                            </div>
+                            <details class="viewer-panel-block viewer-coord-panel">
+                                <summary>좌표 / 인덱스</summary>
+                                <div class="viewer-panel-body">
+                                    <div class="grid-4">
+                                        <div class="field"><label for="viewerCoordLon">경도</label><input type="number" id="viewerCoordLon" step="0.000001" placeholder="127.0"></div>
+                                        <div class="field"><label for="viewerCoordLat">위도</label><input type="number" id="viewerCoordLat" step="0.000001" placeholder="37.55"></div>
+                                        <div class="field"><label for="viewerCoordHeight">높이(m)</label><input type="number" id="viewerCoordHeight" placeholder="0"></div>
+                                        <div class="field"><label for="viewerCoordLevel">레벨</label><input type="number" id="viewerCoordLevel" min="0" placeholder="생략 가능"></div>
+                                        <div class="field"><label for="viewerIdxCol">col</label><input type="number" id="viewerIdxCol" placeholder="예: 128"></div>
+                                        <div class="field"><label for="viewerIdxRow">row</label><input type="number" id="viewerIdxRow" placeholder="예: 256"></div>
+                                        <div class="field"><label for="viewerIdxFloor">floor</label><input type="number" id="viewerIdxFloor" placeholder="0"></div>
+                                        <div class="field"><label for="viewerIdxVx">vx</label><input type="number" id="viewerIdxVx" placeholder="생략 가능"></div>
+                                        <div class="field"><label for="viewerIdxVy">vy</label><input type="number" id="viewerIdxVy" placeholder="생략 가능"></div>
+                                        <div class="field"><label for="viewerIdxVz">vz</label><input type="number" id="viewerIdxVz" placeholder="생략 가능"></div>
+                                        <div class="field"><label for="viewerDatacubeId">Datacube ID</label><input type="text" id="viewerDatacubeId" placeholder="예: 1_1_9_128_256_0"></div>
+                                        <div class="field"><label for="viewerDatacubeFormat">Datacube 형식</label><select id="viewerDatacubeFormat"><option value="raw">raw</option><option value="voxels">voxels</option></select></div>
+                                    </div>
+                                    <div class="viewer-action-grid">
+                                        <button class="btn btn-secondary" onclick="viewerCoordToIndex()">좌표 → 인덱스</button>
+                                        <button class="btn btn-secondary" onclick="viewerIndexToCoord()">인덱스 → 좌표</button>
+                                        <button class="btn btn-secondary" onclick="loadViewerDatacube()">Datacube 조회</button>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        <aside class="viewer-controls">
+                            <div class="viewer-load-row">
+                                <div class="field">
+                                    <label for="viewerLayerName">레이어 이름</label>
+                                    <input type="text" id="viewerLayerName" placeholder="예: building_bit">
+                                </div>
+                                <button class="btn btn-primary" onclick="loadViewerTileset()">로드</button>
+                            </div>
+                            <div class="viewer-action-grid">
+                                <button class="btn btn-secondary" onclick="zoomToCurrentTileset()">타일셋 줌</button>
+                                <button class="btn btn-danger" onclick="removeViewerTileset()">제거</button>
+                            </div>
+                            <details class="viewer-panel-block" open>
+                                <summary>필터 / 영역</summary>
+                                <div class="viewer-panel-body">
+                                    <div class="grid-2">
+                                        <div class="field"><label for="viewerHeightMin">최소 높이(m)</label><input type="number" id="viewerHeightMin" placeholder="예: 0"></div>
+                                        <div class="field"><label for="viewerHeightMax">최대 높이(m)</label><input type="number" id="viewerHeightMax" placeholder="예: 120"></div>
+                                        <div class="field"><label for="viewerValueOp">값 조건</label><select id="viewerValueOp"><option value="">없음</option><option value=">=">&gt;=</option><option value="<=">&lt;=</option><option value="=">=</option><option value="!=">!=</option><option value="range">range</option></select></div>
+                                        <div class="field"><label for="viewerValue1">값 1</label><input type="number" id="viewerValue1" placeholder="예: 10"></div>
+                                        <div class="field"><label for="viewerValue2">값 2</label><input type="number" id="viewerValue2" placeholder="range 전용"></div>
+                                        <div class="field"><label for="viewerAreaWest">서쪽 경도</label><input type="number" id="viewerAreaWest" step="0.000001" placeholder="126.9"></div>
+                                        <div class="field"><label for="viewerAreaSouth">남쪽 위도</label><input type="number" id="viewerAreaSouth" step="0.000001" placeholder="37.4"></div>
+                                        <div class="field"><label for="viewerAreaEast">동쪽 경도</label><input type="number" id="viewerAreaEast" step="0.000001" placeholder="127.2"></div>
+                                        <div class="field"><label for="viewerAreaNorth">북쪽 위도</label><input type="number" id="viewerAreaNorth" step="0.000001" placeholder="37.7"></div>
+                                    </div>
+                                    <div class="viewer-action-grid">
+                                        <button class="btn btn-primary" onclick="applyViewerFilters()">필터 적용 조회</button>
+                                        <button class="btn btn-secondary" onclick="resetViewerFilters()">필터 초기화</button>
+                                        <button class="btn btn-soft" onclick="selectViewerArea()">영역 선택</button>
+                                        <button class="btn btn-secondary" onclick="clearViewerArea()">영역 해제</button>
+                                    </div>
+                                </div>
+                            </details>
+                            <details class="viewer-panel-block">
+                                <summary>카메라 / 측정</summary>
+                                <div class="viewer-panel-body">
+                                    <div class="viewer-action-grid">
+                                        <button class="btn btn-secondary" onclick="viewNorth()">북쪽 보기</button>
+                                        <button class="btn btn-secondary" onclick="zoomInViewer()">줌 인</button>
+                                        <button class="btn btn-secondary" onclick="zoomOutViewer()">줌 아웃</button>
+                                        <button class="btn btn-secondary" onclick="measureDistance()">거리 측정</button>
+                                        <button class="btn btn-secondary" onclick="measureArea()">면적 측정</button>
+                                        <button class="btn btn-secondary" onclick="clearViewerMeasure()">측정 지우기</button>
+                                    </div>
+                                </div>
+                            </details>
+                            <details class="viewer-panel-block">
+                                <summary>분석 / 내보내기</summary>
+                                <div class="viewer-panel-body">
+                                    <div class="viewer-action-grid">
+                                        <button type="button" class="btn btn-primary" onclick="runViewerQuery('summary')">요약 쿼리</button>
+                                        <button type="button" class="btn btn-secondary" onclick="runViewerQuery('detail')">상세 쿼리</button>
+                                        <button type="button" class="btn btn-secondary" onclick="loadViewerGeoJson()">JSON GeoJSON</button>
+                                        <button type="button" class="btn btn-secondary" onclick="loadViewerPoints()">JSON Points</button>
+                                        <button type="button" class="btn btn-secondary" onclick="loadViewerCubeGrid()">Cube Grid</button>
+                                        <button type="button" class="btn btn-secondary" onclick="computeViewerVolume()">볼륨 계산</button>
+                                        <button type="button" class="btn btn-soft" onclick="exportViewerGlb()">GLB 내보내기</button>
+                                        <button type="button" class="btn btn-soft" onclick="exportViewerBinary()">Binary 내보내기</button>
+                                        <button type="button" class="btn btn-soft" onclick="exportViewer3dTiles()">3D Tiles 내보내기</button>
+                                    </div>
+                                </div>
+                            </details>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+    var client = null;
+    var viewer = null;
+    var currentTilesetHandle = null;
+    var currentTimeseriesBarName = null;
+    var currentViewerGridSource = null;
+    var viewerCubeGridTiles = [];
+    var viewerCubeGridMoveHandler = null;
+    var viewerJsonPickHandler = null;
+    var viewerPointState = {
+        entities: [],
+        fields: [],
+        currentField: null,
+        currentTimeIndex: 0,
+        totalTimeSteps: 0,
+        playTimer: null
+    };
+
+    var uploadState = {
+        tiles3d: null,
+        tiles3dBatchAttrs: null,
+        las: null,
+        tif: null,
+        netcdf: null,
+        cube: null,
+        shp: null,
+        dem: null,
+        stats: null
+    };
+
+    function pretty(value) {
+        if (value == null) return '';
+        if (typeof value === 'string') return value;
+        try { return JSON.stringify(value, null, 2); } catch (e) { return String(value); }
+    }
+
+    function readNumber(id) {
+        var raw = document.getElementById(id).value;
+        if (raw == null || raw === '') return undefined;
+        var value = parseFloat(raw);
+        return Number.isFinite(value) ? value : undefined;
+    }
+
+    function readInteger(id) {
+        var raw = document.getElementById(id).value;
+        if (raw == null || raw === '') return undefined;
+        var value = parseInt(raw, 10);
+        return Number.isFinite(value) ? value : undefined;
+    }
+
+    function setStatus(text, type) {
+        var el = document.getElementById('connStatus');
+        el.textContent = text;
+        el.className = 'status-badge ' + (type === 'ok' ? 'status-ok' : type === 'error' ? 'status-error' : 'status-idle');
+    }
+
+    function logTo(id, title, data) {
+        var prefix = title ? '[' + title + ']\n' : '';
+        document.getElementById(id).textContent = prefix + pretty(data);
+    }
+
+    function getClient() {
+        var serverUrl = document.getElementById('serverUrl').value.trim();
+        var apiKey = document.getElementById('apiKey').value.trim();
+        if (!serverUrl) throw new Error('서버 주소를 입력하세요.');
+        client = new DataCubeClient(serverUrl, {
+            apiKey: apiKey || null,
+            timeout: 180000
+        });
+        return client;
+    }
+
+    window.buildApiUrl = function (path) {
+        var serverUrl = document.getElementById('serverUrl').value.trim().replace(/\/+$/, '');
+        var apiKey = document.getElementById('apiKey').value.trim();
+        var value = String(path || '');
+        if (value.charAt(0) !== '/') value = '/' + value;
+        var url = serverUrl + '/api' + value;
+        if (apiKey && !/[?&]key=/.test(url)) {
+            url += (url.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(apiKey);
+        }
+        return url;
+    };
+
+    async function connectWithKey() {
+        try {
+            var api = getClient();
+            var layers = await api.layers.list(1, 5);
+            setStatus('연결됨', 'ok');
+            logTo('authLog', '연결 확인', {
+                server: document.getElementById('serverUrl').value.trim(),
+                api_key_set: !!document.getElementById('apiKey').value.trim(),
+                sample_layer_count: layers.length,
+                pagination: layers.pagination || null
+            });
+        } catch (e) {
+            setStatus('연결 실패', 'error');
+            logTo('authLog', '오류', e.message || e);
+        }
+    }
+
+    async function listLayers() {
+        try {
+            var api = getClient();
+            var layers = await api.layers.list(1, 50);
+            logTo('infoLog', '레이어 목록', {
+                count: layers.length,
+                pagination: layers.pagination || null,
+                items: layers
+            });
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function listTilesets() {
+        try {
+            var api = getClient();
+            var tiles = await api.tiles.list();
+            logTo('infoLog', '타일셋 목록', { count: tiles.length, items: tiles });
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function getLayerDetail() {
+        try {
+            var name = document.getElementById('layerNameInput').value.trim();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var api = getClient();
+            var data = await api.layers.get(name);
+            logTo('infoLog', '레이어 상세', data);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function getLayerStats() {
+        try {
+            var name = document.getElementById('layerNameInput').value.trim();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var api = getClient();
+            var data = await api.layers.stats(name);
+            logTo('infoLog', '레이어 통계', data);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function checkLayerName() {
+        try {
+            var name = document.getElementById('layerNameInput').value.trim() || document.getElementById('createTilesetName').value.trim();
+            if (!name) throw new Error('확인할 레이어 이름을 입력하세요.');
+            var api = getClient();
+            var data = await api.layers.checkName(name);
+            logTo('infoLog', '이름 중복 확인', data);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function listCreateJobs() {
+        try {
+            var api = getClient();
+            var jobs = await api.data.listJobs();
+            logTo('infoLog', '생성 작업 목록', jobs);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function getCreateJobStatus() {
+        try {
+            var api = getClient();
+            var jobId = document.getElementById('jobIdInput').value.trim();
+            if (!jobId) throw new Error('Job ID를 입력하세요.');
+            var job = await api.data.jobStatus(jobId, { include_log: true });
+            logTo('infoLog', '생성 작업 상태', job);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function waitCreateJob() {
+        try {
+            var api = getClient();
+            var jobId = document.getElementById('jobIdInput').value.trim();
+            if (!jobId) throw new Error('Job ID를 입력하세요.');
+            var result = await api.data.waitJob(jobId, {
+                pollInterval: 2000,
+                timeout: 600000,
+                onProgress: function (status) {
+                    logTo('infoLog', '생성 작업 대기 중', status);
+                }
+            });
+            logTo('infoLog', '생성 작업 완료', result);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function cancelCreateJob() {
+        try {
+            var api = getClient();
+            var jobId = document.getElementById('jobIdInput').value.trim();
+            if (!jobId) throw new Error('Job ID를 입력하세요.');
+            logTo('infoLog', '생성 작업 취소', await api.data.cancelJob(jobId));
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function deleteCreateJob() {
+        try {
+            var api = getClient();
+            var jobId = document.getElementById('jobIdInput').value.trim();
+            if (!jobId) throw new Error('Job ID를 입력하세요.');
+            logTo('infoLog', '생성 작업 삭제', await api.data.deleteJob(jobId));
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    function getMergeSources() {
+        return document.getElementById('mergeSourceLayers').value.split(',').map(function (item) {
+            return item.trim();
+        }).filter(Boolean);
+    }
+
+    async function validateMerge() {
+        try {
+            var api = getClient();
+            var sources = getMergeSources();
+            if (!sources.length) throw new Error('원본 레이어를 입력하세요.');
+            logTo('infoLog', '병합 검증', await api.layers.validateMerge(sources));
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitMerge() {
+        try {
+            var api = getClient();
+            var name = document.getElementById('mergeLayerName').value.trim();
+            var sources = getMergeSources();
+            if (!name) throw new Error('새 레이어 이름을 입력하세요.');
+            if (!sources.length) throw new Error('원본 레이어를 입력하세요.');
+            var opts = {
+                description: document.getElementById('createDescription').value.trim(),
+                merge_level: readInteger('mergeTileLevel'),
+                is_public: document.getElementById('createIsPublic').checked
+            };
+            var data = await api.layers.merge(name, sources, opts);
+            if (data.job_id) document.getElementById('jobIdInput').value = data.job_id;
+            logTo('infoLog', '병합 job 제출', data);
+        } catch (e) {
+            logTo('infoLog', '오류', e.message || e);
+        }
+    }
+
+    function switchCreateTab(id, btn) {
+        document.querySelectorAll('.tab-pane').forEach(function (pane) {
+            pane.classList.toggle('active', pane.id === id);
+        });
+        document.querySelectorAll('.tab-btn').forEach(function (el) {
+            el.classList.toggle('active', el === btn);
+        });
+    }
+
+    function pickFiles(id) {
+        var input = document.getElementById(id);
+        if (input) input.click();
+    }
+
+    function preventFileNavigation(e) {
+        var types = e.dataTransfer && e.dataTransfer.types;
+        if (types && Array.prototype.indexOf.call(types, 'Files') !== -1) {
+            e.preventDefault();
+        }
+    }
+
+    function renderFileSummary(targetId, title, data, files) {
+        var el = document.getElementById(targetId);
+        var list = files || [];
+        var html = '<strong>' + title + '</strong>';
+        if (data && typeof data.file_count === 'number') {
+            html += ' <span class="muted">(' + data.file_count + '개 파일)</span>';
+        }
+        if (data && data.detected_crs) {
+            html += '<div style="margin-top:6px"><strong>감지된 CRS:</strong> ' + data.detected_crs + '</div>';
+        }
+        if (data && data.has_tileset_json != null) {
+            html += '<div style="margin-top:6px"><strong>tileset.json 포함:</strong> ' + (data.has_tileset_json ? '예' : '아니오') + '</div>';
+        }
+        if (data && data.has_cube_files != null) {
+            html += '<div style="margin-top:6px"><strong>큐브 데이터 포함:</strong> ' + (data.has_cube_files ? '예' : '아니오') + '</div>';
+        }
+        if (data && data.has_voxelset_json != null) {
+            html += '<div style="margin-top:6px"><strong>voxelset.json 포함:</strong> ' + (data.has_voxelset_json ? '예' : '아니오') + '</div>';
+        }
+        if (list.length) {
+            html += '<ul>' + list.slice(0, 30).map(function (name) {
+                return '<li>' + escapeHtml(name) + '</li>';
+            }).join('') + '</ul>';
+        }
+        el.innerHTML = html;
+    }
+
+    function escapeHtml(value) {
+        var div = document.createElement('div');
+        div.textContent = value == null ? '' : String(value);
+        return div.innerHTML;
+    }
+
+    function wireDropZone(zoneId, handler) {
+        var zone = document.getElementById(zoneId);
+        zone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.add('active');
+        });
+        zone.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.remove('active');
+        });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.remove('active');
+            handler(e.dataTransfer.files);
+        });
+    }
+
+    function fileBaseName(path) {
+        return String(path || '').replace(/\\/g, '/').split('/').pop();
+    }
+
+    function selectedRadioValue(name, fallback) {
+        var checked = document.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : fallback;
+    }
+
+    function setOptions(select, fields, extraOptions, emptyLabel) {
+        if (!select) return;
+        var html = '';
+        if (emptyLabel != null) html += '<option value="">' + escapeHtml(emptyLabel) + '</option>';
+        (fields || []).forEach(function (field) {
+            html += '<option value="' + escapeHtml(field) + '">' + escapeHtml(field) + '</option>';
+        });
+        (extraOptions || []).forEach(function (item) {
+            html += '<option value="' + escapeHtml(item.value) + '">' + escapeHtml(item.label) + '</option>';
+        });
+        select.innerHTML = html;
+    }
+
+    function autoSelect(select, fields, candidates) {
+        if (!select || !fields || !fields.length) return;
+        var lower = fields.map(function (f) { return String(f).toLowerCase(); });
+        for (var i = 0; i < candidates.length; i++) {
+            var exact = lower.indexOf(candidates[i].toLowerCase());
+            if (exact !== -1) {
+                select.value = fields[exact];
+                return;
+            }
+        }
+        for (var j = 0; j < candidates.length; j++) {
+            var partial = lower.findIndex(function (field) { return field.indexOf(candidates[j].toLowerCase()) !== -1; });
+            if (partial !== -1) {
+                select.value = fields[partial];
+                return;
+            }
+        }
+    }
+
+    function updateShpCustomFieldUi() {
+        document.getElementById('shpHeightCustom').style.display = document.getElementById('shpHeightField').value === '__custom__' ? '' : 'none';
+        document.getElementById('shpZCustom').style.display = document.getElementById('shpZField').value === '__custom__' ? '' : 'none';
+    }
+
+    function updateShpTypeUi() {
+        var isPointType = selectedRadioValue('shpType', 'building') === 'point_type';
+        document.querySelectorAll('.shp-point-type-only').forEach(function (el) {
+            el.style.display = isPointType ? '' : 'none';
+        });
+        if (isPointType && !document.getElementById('shpPointDiameter').value) document.getElementById('shpPointDiameter').value = '1';
+        if (isPointType) {
+            document.getElementById('shpZField').value = '__default_dem__';
+            updateShpCustomFieldUi();
+        }
+    }
+
+    function populateShpSingleMode(fields) {
+        fields = fields || [];
+        setOptions(document.getElementById('shpHeightField'), fields, [{ value: '__custom__', label: '사용자 입력' }]);
+        setOptions(document.getElementById('shpZField'), fields, [
+            { value: '__custom__', label: '사용자 입력' },
+            { value: '__default_dem__', label: '기본 DEM' },
+            { value: '__dem__', label: 'DEM 파일' }
+        ]);
+        setOptions(document.getElementById('shpValueField'), fields, [], '(없음 = point_type)');
+        autoSelect(document.getElementById('shpHeightField'), fields, ['height', 'h', 'bld_height', 'bldg_ht', 'grnd_flr']);
+        autoSelect(document.getElementById('shpZField'), fields, ['zvalue', 'z', 'z_value', 'dem', 'elevation', 'elev', 'alt', 'grnd_hgt']);
+        updateShpCustomFieldUi();
+    }
+
+    function setShpSingleControlsVisible(visible) {
+        var display = visible ? '' : 'none';
+        var modeGroup = document.querySelector('#tab-shp .radio-group');
+        if (modeGroup) modeGroup.style.display = display;
+        ['shpHeightField', 'shpZField', 'shpValueType', 'shpValueField', 'shpAggregation', 'shpPointDiameter'].forEach(function (id) {
+            var el = document.getElementById(id);
+            var field = el && el.closest('.field');
+            if (field) field.style.display = display;
+        });
+        if (visible) updateShpTypeUi();
+    }
+
+    function shpTableSelectOptions(fields, emptyLabel, extras) {
+        var html = emptyLabel == null ? '' : '<option value="">' + escapeHtml(emptyLabel) + '</option>';
+        (fields || []).forEach(function (field) {
+            html += '<option value="' + escapeHtml(field) + '">' + escapeHtml(field) + '</option>';
+        });
+        (extras || []).forEach(function (item) {
+            html += '<option value="' + escapeHtml(item.value) + '">' + escapeHtml(item.label) + '</option>';
+        });
+        return html;
+    }
+
+    function renderShpPerFileTable() {
+        var entries = uploadState.shpEntries || [];
+        var container = document.getElementById('shpPerFilePanels');
+        if (entries.length <= 1) {
+            setShpSingleControlsVisible(true);
+            container.innerHTML = '';
+            if (entries.length === 1) populateShpSingleMode(entries[0].fields || []);
+            return;
+        }
+        setShpSingleControlsVisible(false);
+        var zExtras = [
+            { value: '__custom__', label: '사용자 입력' },
+            { value: '__default_dem__', label: '기본 DEM' },
+            { value: '__dem__', label: 'DEM 파일' }
+        ];
+        var html = '<div class="mini-table-wrap"><table class="mini-table"><thead><tr>' +
+            '<th>파일</th><th>유형</th><th>높이 필드</th><th>지형고도 필드</th><th>값 유형</th><th>값 필드</th><th>집계</th><th>포인트 직경</th>' +
+            '</tr></thead><tbody>';
+        entries.forEach(function (entry, index) {
+            var fields = entry.fields || [];
+            html += '<tr data-index="' + index + '">' +
+                '<td title="' + escapeHtml(entry.path) + '">' + escapeHtml(entry.name) + '</td>' +
+                '<td><select class="pf-type"><option value="building">건물</option><option value="point_type">점유형</option><option value="other">기타</option></select></td>' +
+                '<td><select class="pf-height">' + shpTableSelectOptions(fields, null, [{ value: '__custom__', label: '사용자 입력' }]) + '</select><input class="pf-height-custom" type="number" placeholder="m" style="display:none"></td>' +
+                '<td><select class="pf-zfield">' + shpTableSelectOptions(fields, null, zExtras) + '</select><input class="pf-z-custom" type="number" placeholder="m" style="display:none"></td>' +
+                '<td><select class="pf-valuetype"><option value="bit">bit</option><option value="byte">byte</option><option value="short">short</option><option value="int">int</option><option value="float">float</option><option value="double">double</option></select></td>' +
+                '<td><select class="pf-valuefield">' + shpTableSelectOptions(fields, '(없음)', []) + '</select></td>' +
+                '<td><select class="pf-aggregation"><option value="max">max</option><option value="min">min</option><option value="avg">avg</option><option value="custom">custom</option></select></td>' +
+                '<td><input class="pf-pointdiam" type="number" placeholder="점유형만" disabled></td>' +
+                '</tr>';
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+        container.querySelectorAll('tbody tr').forEach(function (tr) {
+            var entry = entries[parseInt(tr.dataset.index, 10)];
+            autoSelect(tr.querySelector('.pf-height'), entry.fields || [], ['height', 'h', 'bld_height', 'bldg_ht', 'grnd_flr']);
+            autoSelect(tr.querySelector('.pf-zfield'), entry.fields || [], ['zvalue', 'z', 'z_value', 'dem', 'elevation', 'elev', 'alt', 'grnd_hgt']);
+        });
+    }
+
+    function updateStatsPreview(targetId, columns, preview) {
+        var el = document.getElementById(targetId);
+        if (!columns || !columns.length || !preview || !preview.length) {
+            el.style.display = 'none';
+            el.innerHTML = '';
+            return;
+        }
+        var html = '<strong>미리보기</strong><div style="overflow:auto;margin-top:8px"><table class="preview-table"><thead><tr>' +
+            columns.map(function (col) { return '<th>' + escapeHtml(col) + '</th>'; }).join('') +
+            '</tr></thead><tbody>' +
+            preview.map(function (row) {
+                return '<tr>' + columns.map(function (col) { return '<td>' + escapeHtml(row[col] == null ? '' : row[col]) + '</td>'; }).join('') + '</tr>';
+            }).join('') +
+            '</tbody></table></div>';
+        el.innerHTML = html;
+        el.style.display = '';
+    }
+
+    function detectPointCsv(columns) {
+        var lower = (columns || []).map(function (col) { return String(col).toLowerCase(); });
+        var skip = { longitude: true, lng: true, lon: true, x: true, latitude: true, lat: true, y: true, station_id: true, id: true, sid: true, station_name: true, name: true, datetime: true, date: true, time: true, timestamp: true, t: true, elevation: true, elev: true, alt: true, height: true };
+        return {
+            hasLon: lower.some(function (col) { return ['longitude', 'lng', 'lon', 'x'].indexOf(col) !== -1; }),
+            hasLat: lower.some(function (col) { return ['latitude', 'lat', 'y'].indexOf(col) !== -1; }),
+            hasDatetime: lower.some(function (col) { return ['datetime', 'date', 'time', 'timestamp', 't'].indexOf(col) !== -1; }),
+            hasStationId: lower.some(function (col) { return ['station_id', 'id', 'sid'].indexOf(col) !== -1; }),
+            valueFields: (columns || []).filter(function (col) { return !skip[String(col).toLowerCase()]; })
+        };
+    }
+
+    function toggleStatsMode() {
+        var mode = selectedRadioValue('statsMode', 'point');
+        document.getElementById('statsPointPanel').style.display = mode === 'point' ? '' : 'none';
+        document.getElementById('statsAdminPanel').style.display = mode === 'admin' ? '' : 'none';
+        document.getElementById('statsDataPanel').style.display = mode === 'stats' ? '' : 'none';
+        if (mode === 'stats') loadStatsBaseLayers();
+    }
+
+    function toggleNetcdfMode() {
+        var mode = selectedRadioValue('netcdfMode', 'single');
+        var dataType = selectedRadioValue('netcdfDataType', 'wind');
+        document.getElementById('netcdfSinglePanel').style.display = mode === 'single' ? '' : 'none';
+        document.getElementById('netcdfBatchPanel').style.display = mode === 'batch' ? '' : 'none';
+        document.querySelectorAll('.netcdf-wind-field').forEach(function (el) {
+            el.style.display = mode === 'single' && dataType === 'wind' ? '' : 'none';
+        });
+        document.querySelectorAll('.netcdf-scalar-field').forEach(function (el) {
+            el.style.display = mode === 'single' && dataType === 'scalar' ? '' : 'none';
+        });
+    }
+
+    function populateNetcdfFileSelects(files) {
+        var values = files || [];
+        var html = '<option value="">업로드 파일 선택</option>' + values.map(function (path) {
+            var label = String(path || '').replace(/\\/g, '/').split('/').slice(-3).join('/');
+            return '<option value="' + escapeHtml(path) + '">' + escapeHtml(label) + '</option>';
+        }).join('');
+        ['netcdfUSelect', 'netcdfVSelect', 'netcdfScalarSelect'].forEach(function (id) {
+            document.getElementById(id).innerHTML = html;
+        });
+
+        var lower = values.map(function (path) { return String(path).toLowerCase(); });
+        function pick(targetId, patterns) {
+            for (var i = 0; i < patterns.length; i++) {
+                var idx = lower.findIndex(function (path) { return patterns[i].test(path); });
+                if (idx !== -1) {
+                    document.getElementById(targetId).value = values[idx];
+                    return;
+                }
+            }
+        }
+        pick('netcdfUSelect', [/(^|[\/_\-.])u([_\-.]|10m|wind|component)/, /u_component/, /ugrd/]);
+        pick('netcdfVSelect', [/(^|[\/_\-.])v([_\-.]|10m|wind|component)/, /v_component/, /vgrd/]);
+        pick('netcdfScalarSelect', [/scalar/, /temp/, /tmp/, /value/, /data/]);
+    }
+
+    async function loadStatsBaseLayers() {
+        var select = document.getElementById('statsBaseLayer');
+        try {
+            var api = getClient();
+            var tiles = await api.tiles.list();
+            var adminLayers = (tiles || []).filter(function (item) {
+                return item.is_admin_data === true
+                    || item.isAdminData === true
+                    || (item.metadata && item.metadata.isAdminData === true);
+            });
+            select.innerHTML = '<option value="">-- 행정구역 레이어 선택 --</option>' + adminLayers.map(function (item) {
+                var name = item.tileset_name || item.layer_name || item.name || '';
+                return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+            }).join('');
+        } catch (e) {
+            select.innerHTML = '<option value="">로드 실패</option>';
+            logTo('createLog', '기준 레이어 로드 오류', e.message || e);
+        }
+    }
+
+    async function upload3DTiles(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadGlb(Array.from(files || []).filter(Boolean));
+            uploadState.tiles3d = data;
+            uploadState.tiles3dBatchAttrs = data.batch_attributes || null;
+            populateTiles3dAttrFields(uploadState.tiles3dBatchAttrs);
+            var names = (data.relative_files && data.relative_files.length ? data.relative_files : (data.saved_files || data.glb_files || [])).map(function (v) { return String(v).replace(/\\/g, '/'); });
+            renderFileSummary('tiles3dUploadStatus', '3D Tiles 업로드 완료', data, names);
+            logTo('createLog', '3D Tiles 업로드', data);
+        } catch (e) {
+            uploadState.tiles3d = null;
+            uploadState.tiles3dBatchAttrs = null;
+            populateTiles3dAttrFields(null);
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('tiles3dUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    function populateTiles3dAttrFields(batchAttrs) {
+        var select = document.getElementById('tiles3dAttrField');
+        if (!select) return;
+        select.innerHTML = '<option value="">(없음 - 점유 모드)</option>';
+        Object.keys(batchAttrs || {}).forEach(function (key) {
+            var info = batchAttrs[key] || {};
+            var option = document.createElement('option');
+            option.value = key;
+            option.textContent = key + (info.dtype ? ' (' + info.dtype + ')' : '');
+            select.appendChild(option);
+        });
+        onTiles3dAttrFieldChange();
+    }
+
+    function onTiles3dAttrFieldChange() {
+        var select = document.getElementById('tiles3dAttrField');
+        var wrap = document.getElementById('tiles3dAttrMappingWrap');
+        if (!select || !wrap) return;
+
+        var field = select.value;
+        var attrs = uploadState.tiles3dBatchAttrs || {};
+        var info = field ? attrs[field] : null;
+        if (!info) {
+            wrap.style.display = 'none';
+            wrap.innerHTML = '';
+            return;
+        }
+
+        if (info.dtype === 'string' && Array.isArray(info.unique_values)) {
+            var rows = info.unique_values.map(function (value, index) {
+                return '<tr class="attr-map-row" data-key="' + encodeURIComponent(String(value)) + '">' +
+                    '<td>' + (index + 1) + '</td>' +
+                    '<td>' + escapeHtml(value) + '</td>' +
+                    '<td><input type="number" value="' + (index + 1) + '" step="1"></td>' +
+                    '</tr>';
+            }).join('');
+            wrap.innerHTML =
+                '<strong>속성값 매핑</strong>' +
+                '<div class="mini-table-wrap" style="margin-bottom:0">' +
+                '<table class="mini-table" style="min-width:0">' +
+                '<thead><tr><th style="width:54px">번호</th><th>값</th><th style="width:120px">매핑</th></tr></thead>' +
+                '<tbody>' + rows + '</tbody></table></div>';
+            wrap.style.display = '';
+            return;
+        }
+
+        var rangeText = '';
+        if (info.min != null && info.max != null) rangeText = ' 범위: ' + info.min + ' ~ ' + info.max;
+        wrap.innerHTML = '<strong>속성값 매핑</strong><div style="margin-top:6px">숫자 속성은 값이 그대로 복셀에 저장됩니다.' + escapeHtml(rangeText) + '</div>';
+        wrap.style.display = '';
+    }
+
+    function getTiles3dAttributeMapping() {
+        var field = document.getElementById('tiles3dAttrField').value;
+        var attrs = uploadState.tiles3dBatchAttrs || {};
+        var info = field ? attrs[field] : null;
+        if (!info || info.dtype !== 'string') return null;
+        var mapping = {};
+        document.querySelectorAll('#tiles3dAttrMappingWrap .attr-map-row').forEach(function (row) {
+            var key = decodeURIComponent(row.dataset.key || '');
+            var input = row.querySelector('input');
+            if (!key || !input || input.value === '') return;
+            mapping[key] = parseFloat(input.value);
+        });
+        return Object.keys(mapping).length ? mapping : null;
+    }
+
+    async function uploadLas(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadLas(Array.from(files || []).filter(Boolean));
+            uploadState.las = data;
+            if (data.detected_crs) document.getElementById('lasSourceCrs').value = data.detected_crs;
+            renderFileSummary('lasUploadStatus', 'LAS 업로드 완료', data, [String(data.las_file || '').replace(/\\/g, '/')]);
+            logTo('createLog', 'LAS 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('lasUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadTif(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadTif(Array.from(files || []).filter(Boolean));
+            uploadState.tif = data;
+            renderFileSummary('tifUploadStatus', 'TIF 업로드 완료', data, (data.tif_files || []).map(function (v) { return String(v).replace(/\\/g, '/'); }));
+            logTo('createLog', 'TIF 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('tifUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadNetcdf(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadNetcdf(Array.from(files || []).filter(Boolean));
+            uploadState.netcdf = data;
+            var names = (data.relative_files && data.relative_files.length ? data.relative_files : (data.saved_files || data.files || [])).map(function (v) { return String(v).replace(/\\/g, '/'); });
+            populateNetcdfFileSelects(data.files || data.saved_files || []);
+            renderFileSummary('netcdfUploadStatus', 'NetCDF/GRIB2 업로드 완료', data, names);
+            logTo('createLog', 'NetCDF/GRIB2 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('netcdfUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadCube(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadCube(Array.from(files || []).filter(Boolean));
+            uploadState.cube = data;
+            var names = (data.relative_files && data.relative_files.length ? data.relative_files : (data.saved_files || [])).map(function (v) { return String(v).replace(/\\/g, '/'); });
+            renderFileSummary('cubeUploadStatus', 'Cube 업로드 완료', data, names);
+            logTo('createLog', 'Cube 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('cubeUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadShp(files) {
+        try {
+            var api = getClient();
+            var data = await api.data.uploadShp(Array.from(files || []).filter(Boolean));
+            uploadState.shp = data;
+            var perFileFields = data.per_file_fields || {};
+            var existing = uploadState.shpEntries || [];
+            var existingNames = existing.reduce(function (acc, item) {
+                acc[item.name] = true;
+                return acc;
+            }, {});
+            var newEntries = (data.shp_files || data.input_files || []).map(function (path) {
+                var name = fileBaseName(path);
+                return { path: path, name: name, fields: perFileFields[name] || data.fields || [] };
+            }).filter(function (entry) {
+                return !existingNames[entry.name];
+            });
+            uploadState.shpEntries = existing.concat(newEntries);
+            renderFileSummary('shpUploadStatus', 'SHP 업로드 완료', data, uploadState.shpEntries.map(function (entry) { return entry.path; }));
+            renderShpPerFileTable();
+            logTo('createLog', 'SHP 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('shpUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadDem(files) {
+        try {
+            var file = Array.from(files || []).filter(Boolean)[0];
+            if (!file) throw new Error('DEM 파일을 선택하세요.');
+            var api = getClient();
+            var data = await api.data.uploadDem(file);
+            uploadState.dem = data;
+            renderFileSummary('demUploadStatus', 'DEM 업로드 완료', data, [data.dem_path || data.filename || file.name]);
+            logTo('createLog', 'DEM 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById('demUploadStatus').textContent = e.message || String(e);
+        }
+    }
+
+    async function uploadJsonFile(files, stateKey, statusId, label, afterUpload) {
+        try {
+            var file = Array.from(files || []).filter(Boolean)[0];
+            if (!file) throw new Error(label + ' 파일을 선택하세요.');
+            var api = getClient();
+            var data = await api.data.uploadJson(file);
+            uploadState[stateKey] = data;
+            renderFileSummary(statusId, label + ' 업로드 완료', data, [data.filepath || data.filename || file.name]);
+            if (afterUpload) afterUpload(data, file);
+            logTo('createLog', label + ' 업로드', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+            document.getElementById(statusId).textContent = e.message || String(e);
+        }
+    }
+
+    function uploadJsonGeojson(files) {
+        uploadJsonFile(files, 'statsGeojson', 'statsGeojsonStatus', 'GeoJSON');
+    }
+
+    function uploadJsonCsv(files) {
+        uploadJsonFile(files, 'statsCsv', 'statsCsvStatus', '통계 CSV', function (data) {
+            var columns = data.columns || [];
+            setOptions(document.getElementById('statsJoinKey'), columns.length ? columns : ['code'], [], null);
+            if (columns.indexOf('code') !== -1) document.getElementById('statsJoinKey').value = 'code';
+            updateStatsPreview('statsCsvPreview', columns, data.preview || []);
+        });
+    }
+
+    function uploadPointCsv(files) {
+        uploadJsonFile(files, 'pointCsv', 'pointCsvStatus', '좌표 CSV', function (data) {
+            var columns = data.columns || [];
+            var detected = detectPointCsv(columns);
+            uploadState.pointCsvDetected = detected;
+            var info = document.getElementById('pointDetectedInfo');
+            info.style.display = '';
+            info.innerHTML =
+                '<strong>자동 감지 결과</strong>' +
+                '<div style="margin-top:6px">좌표: ' + (detected.hasLon && detected.hasLat ? 'longitude/latitude 감지' : 'longitude/latitude 컬럼 필요') + '</div>' +
+                '<div>시계열: ' + (detected.hasDatetime ? 'datetime 컬럼 감지' : '없음') + '</div>' +
+                '<div>측정소 ID: ' + (detected.hasStationId ? '감지' : '좌표별 자동 생성') + '</div>' +
+                '<div>값 필드: <strong>' + escapeHtml(detected.valueFields.join(', ') || '없음') + '</strong></div>';
+            updateStatsPreview('pointCsvPreview', columns, data.preview || []);
+        });
+    }
+
+    function getCommonCreateOptions() {
+        return {
+            tileset_description: document.getElementById('createDescription').value.trim(),
+            is_public: document.getElementById('createIsPublic').checked
+        };
+    }
+
+    async function ensureCreateName() {
+        var name = document.getElementById('createTilesetName').value.trim();
+        if (!name) throw new Error('타일셋 이름을 입력하세요.');
+        var api = getClient();
+        var exists = await api.layers.checkName(name);
+        if (exists && exists.exists) throw new Error('이미 사용 중인 타일셋 이름입니다: ' + name);
+        return name;
+    }
+
+    function showCreateJobCard(title, data) {
+        var el = document.getElementById('createJobCard');
+        el.style.display = '';
+        el.innerHTML =
+            '<div><strong>' + escapeHtml(title) + '</strong></div>' +
+            '<div style="margin-top:6px">job_id: <strong>' + escapeHtml(data.job_id || '-') + '</strong></div>' +
+            '<div style="margin-top:4px">status: <strong>' + escapeHtml(data.status || '-') + '</strong></div>' +
+            '<div style="margin-top:8px" class="muted">생성 작업 목록에서 추가 상태 조회를 할 수 있습니다.</div>';
+        if (data.job_id) document.getElementById('jobIdInput').value = data.job_id;
+    }
+
+    async function submitCreate3DTiles() {
+        try {
+            if (!uploadState.tiles3d) throw new Error('3D Tiles 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var attrField = document.getElementById('tiles3dAttrField').value;
+            var data = await api.data.createGlb(name, uploadState.tiles3d.upload_dir, Object.assign(getCommonCreateOptions(), {
+                max_level: parseInt(document.getElementById('tiles3dMaxLevel').value, 10),
+                value_type: document.getElementById('tiles3dValueType').value,
+                voxel_resolution: parseInt(document.getElementById('tiles3dVoxelResolution').value, 10),
+                tile_height: parseFloat(document.getElementById('tiles3dTileHeight').value),
+                subtree_levels: parseInt(document.getElementById('tiles3dSubtreeLevels').value, 10),
+                min_content_level: parseInt(document.getElementById('tiles3dMinContentLevel').value, 10),
+                workers: document.getElementById('tiles3dWorkers').value ? parseInt(document.getElementById('tiles3dWorkers').value, 10) : null,
+                sample_factor: readNumber('tiles3dSampleFactor') || 1.5,
+                attribute_field: attrField || undefined,
+                attribute_mapping: getTiles3dAttributeMapping() || undefined,
+                aggregation: document.getElementById('tiles3dAggregation').value
+            }));
+            showCreateJobCard('3D Tiles 생성 job 제출 완료', data);
+            logTo('createLog', '3D Tiles 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateLas() {
+        try {
+            if (!uploadState.las) throw new Error('LAS 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createLas(name, uploadState.las.las_file, Object.assign(getCommonCreateOptions(), {
+                max_level: parseInt(document.getElementById('lasMaxLevel').value, 10),
+                source_crs: document.getElementById('lasSourceCrs').value.trim(),
+                value_type: document.getElementById('lasValueType').value,
+                voxel_resolution: parseInt(document.getElementById('lasVoxelResolution').value, 10),
+                tile_height: parseFloat(document.getElementById('lasTileHeight').value),
+                subtree_levels: parseInt(document.getElementById('lasSubtreeLevels').value, 10),
+                min_content_level: parseInt(document.getElementById('lasMinContentLevel').value, 10),
+                workers: document.getElementById('lasWorkers').value ? parseInt(document.getElementById('lasWorkers').value, 10) : null
+            }));
+            showCreateJobCard('LAS 생성 job 제출 완료', data);
+            logTo('createLog', 'LAS 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateTif() {
+        try {
+            if (!uploadState.tif) throw new Error('TIF 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createTif(name, {
+                input_dir: uploadState.tif.upload_dir,
+                input_files: uploadState.tif.tif_files
+            }, Object.assign(getCommonCreateOptions(), {
+                max_level: parseInt(document.getElementById('tifMaxLevel').value, 10),
+                source_crs: document.getElementById('tifSourceCrs').value.trim(),
+                value_type: document.getElementById('tifValueType').value,
+                voxel_resolution: parseInt(document.getElementById('tifVoxelResolution').value, 10),
+                tile_height: parseFloat(document.getElementById('tifTileHeight').value),
+                subtree_levels: parseInt(document.getElementById('tifSubtreeLevels').value, 10),
+                workers: document.getElementById('tifWorkers').value ? parseInt(document.getElementById('tifWorkers').value, 10) : null
+            }));
+            showCreateJobCard('TIF 생성 job 제출 완료', data);
+            logTo('createLog', 'TIF 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateNetcdf() {
+        try {
+            if (!uploadState.netcdf) throw new Error('NetCDF/GRIB2 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var mode = selectedRadioValue('netcdfMode', 'single');
+            var dataType = selectedRadioValue('netcdfDataType', 'wind');
+            var opts = Object.assign(getCommonCreateOptions(), {
+                mode: mode,
+                data_type: dataType,
+                pressure: readInteger('netcdfPressure'),
+                max_level: readInteger('netcdfMaxLevel'),
+                voxel_resolution: readInteger('netcdfVoxelResolution'),
+                value_type: document.getElementById('netcdfValueType').value,
+                data_height: readNumber('netcdfDataHeight'),
+                tile_height: readNumber('netcdfTileHeight'),
+                subtree_levels: readInteger('netcdfSubtreeLevels'),
+                workers: readInteger('netcdfWorkers')
+            });
+
+            if (mode === 'single') {
+                if (dataType === 'wind') {
+                    opts.u_file = document.getElementById('netcdfUSelect').value;
+                    opts.v_file = document.getElementById('netcdfVSelect').value;
+                    if (!opts.u_file || !opts.v_file) throw new Error('U/V 성분 파일을 선택하세요.');
+                } else {
+                    opts.input_file = document.getElementById('netcdfScalarSelect').value;
+                    if (!opts.input_file) throw new Error('스칼라 파일을 선택하세요.');
+                }
+            } else {
+                opts.input_dir = uploadState.netcdf.upload_dir;
+                if (!opts.input_dir) throw new Error('업로드 폴더 정보가 없습니다.');
+                if (!opts.pressure) throw new Error('시계열 배치 기압(hPa)을 입력하세요.');
+            }
+
+            var data = await api.data.createNetcdf(name, opts);
+            showCreateJobCard('NetCDF 생성 job 제출 완료', data);
+            logTo('createLog', 'NetCDF 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateCube() {
+        try {
+            if (!uploadState.cube) throw new Error('Cube 파일을 먼저 업로드하세요.');
+            if (!uploadState.cube.has_cube_files) throw new Error('.bdc 또는 .adc 큐브 데이터가 필요합니다.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createCube(name, uploadState.cube.upload_dir, Object.assign(getCommonCreateOptions(), {
+                subtree_levels: parseInt(document.getElementById('cubeSubtreeLevels').value, 10)
+            }));
+            showCreateJobCard('Cube 등록 job 제출 완료', data);
+            logTo('createLog', 'Cube 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateShp() {
+        try {
+            var entries = uploadState.shpEntries || [];
+            if (!entries.length) throw new Error('SHP 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var opts = Object.assign(getCommonCreateOptions(), {
+                input_files: entries.map(function (entry) { return entry.path; }),
+                max_level: readInteger('shpMaxLevel'),
+                raster_resolution: readInteger('shpRasterResolution'),
+                tile_height: readNumber('shpTileHeight'),
+                subtree_levels: readInteger('shpSubtreeLevels'),
+                min_content_level: readInteger('shpMinContentLevel'),
+                workers: readInteger('shpWorkers'),
+                fill_mode: document.getElementById('shpFillSolid').checked ? 'solid' : 'shell'
+            });
+
+            if (entries.length > 1) {
+                var rows = Array.from(document.querySelectorAll('#shpPerFilePanels tbody tr'));
+                opts.input_files = rows.map(function (tr) { return entries[parseInt(tr.dataset.index, 10)].path; });
+                opts.shp_type = rows.map(function (tr) { return tr.querySelector('.pf-type').value; });
+                opts.height_field = rows.map(function (tr) {
+                    var sel = tr.querySelector('.pf-height');
+                    return sel.value === '__custom__' ? tr.querySelector('.pf-height-custom').value : sel.value;
+                });
+                opts.z_field = rows.map(function (tr) {
+                    var sel = tr.querySelector('.pf-zfield');
+                    return sel.value === '__custom__' ? tr.querySelector('.pf-z-custom').value : sel.value;
+                });
+                opts.value_type = rows.map(function (tr) { return tr.querySelector('.pf-valuetype').value; });
+                opts.value_field = rows.map(function (tr) { return tr.querySelector('.pf-valuefield').value || null; });
+                opts.aggregation = rows.map(function (tr) { return tr.querySelector('.pf-aggregation').value; });
+                opts.point_diameter = rows.map(function (tr) {
+                    var value = tr.querySelector('.pf-pointdiam').value;
+                    return value ? parseFloat(value) : null;
+                });
+            } else {
+                var heightSel = document.getElementById('shpHeightField').value;
+                var zSel = document.getElementById('shpZField').value;
+                var pointDiameter = document.getElementById('shpPointDiameter').value;
+                opts.shp_type = selectedRadioValue('shpType', 'building');
+                opts.height_field = heightSel === '__custom__' ? document.getElementById('shpHeightCustom').value : heightSel;
+                opts.z_field = zSel === '__custom__' ? document.getElementById('shpZCustom').value : zSel;
+                opts.value_type = [document.getElementById('shpValueType').value];
+                opts.value_field = [document.getElementById('shpValueField').value || null];
+                opts.aggregation = [document.getElementById('shpAggregation').value];
+                opts.point_diameter = pointDiameter ? parseFloat(pointDiameter) : null;
+            }
+
+            var zFields = Array.isArray(opts.z_field) ? opts.z_field : [opts.z_field];
+            if (uploadState.dem && uploadState.dem.dem_path && zFields.some(function (field) { return field === '__dem__' || field === '__default_dem__'; })) {
+                opts.dem = uploadState.dem.dem_path;
+            }
+
+            var data = await api.data.createShp(name, opts.input_files, opts);
+            showCreateJobCard('SHP 생성 job 제출 완료', data);
+            logTo('createLog', 'SHP 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateAdmin() {
+        try {
+            var api = getClient();
+            var name = await ensureCreateName();
+            if (!uploadState.statsGeojson) throw new Error('GeoJSON 파일을 먼저 업로드하세요.');
+            var data = await api.data.createAdmin(name, uploadState.statsGeojson.filepath, Object.assign(getCommonCreateOptions(), {
+                admin_level: document.getElementById('statsAdminLevel').value
+            }));
+            showCreateJobCard('Admin 생성 job 제출 완료', data);
+            logTo('createLog', 'Admin 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateStats() {
+        try {
+            if (!uploadState.statsCsv) throw new Error('통계 CSV 파일을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var baseLayer = document.getElementById('statsBaseLayer').value;
+            if (!baseLayer) throw new Error('기준 레이어를 선택하세요.');
+            var data = await api.data.createStats(name, baseLayer, uploadState.statsCsv.filepath, Object.assign(getCommonCreateOptions(), {
+                join_key: document.getElementById('statsJoinKey').value.trim()
+            }));
+            showCreateJobCard('Stats 생성 job 제출 완료', data);
+            logTo('createLog', 'Stats 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreatePoint() {
+        try {
+            if (!uploadState.pointCsv) throw new Error('좌표 CSV 파일을 먼저 업로드하세요.');
+            if (uploadState.pointCsvDetected && (!uploadState.pointCsvDetected.hasLon || !uploadState.pointCsvDetected.hasLat)) {
+                throw new Error('좌표 CSV에는 longitude/latitude 컬럼이 필요합니다.');
+            }
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createPoint(name, uploadState.pointCsv.filepath, Object.assign(getCommonCreateOptions(), {
+                tile_level: readInteger('pointTileLevel')
+            }));
+            showCreateJobCard('Point 생성 job 제출 완료', data);
+            logTo('createLog', 'Point 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateVoxelizer3DTiles() {
+        try {
+            if (!uploadState.tiles3d) throw new Error('3D Tiles 탭에서 GLB/3D Tiles 입력을 먼저 업로드하세요.');
+            if (!uploadState.tiles3d.has_tileset_json) throw new Error('Voxelizer는 tileset.json을 포함한 3D Tiles 입력이 필요합니다.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createVoxelizerGlb(name, uploadState.tiles3d.upload_dir, Object.assign(getCommonCreateOptions(), {
+                max_level: readInteger('tiles3dMaxLevel'),
+                voxel_resolution: readInteger('tiles3dVoxelResolution'),
+                tile_height: readNumber('tiles3dTileHeight'),
+                subtree_levels: readInteger('tiles3dSubtreeLevels'),
+                min_content_level: readInteger('tiles3dMinContentLevel'),
+                workers: readInteger('tiles3dWorkers')
+            }));
+            showCreateJobCard('3D Tiles Voxelizer 생성 job 제출 완료', data);
+            logTo('createLog', '3D Tiles Voxelizer 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateVoxelizerLas() {
+        try {
+            if (!uploadState.las) throw new Error('LAS 탭에서 LAS 입력을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createVoxelizerLas(name, uploadState.las.las_file, Object.assign(getCommonCreateOptions(), {
+                source_crs: document.getElementById('lasSourceCrs').value.trim()
+            }));
+            showCreateJobCard('LAS Voxelizer 생성 job 제출 완료', data);
+            logTo('createLog', 'LAS Voxelizer 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function submitCreateVoxelizerTif() {
+        try {
+            if (!uploadState.tif) throw new Error('TIF 탭에서 TIF 입력을 먼저 업로드하세요.');
+            var api = getClient();
+            var name = await ensureCreateName();
+            var data = await api.data.createVoxelizerTif(name, {
+                input_dir: uploadState.tif.upload_dir,
+                input_files: uploadState.tif.tif_files
+            }, Object.assign(getCommonCreateOptions(), {
+                source_crs: document.getElementById('tifSourceCrs').value.trim()
+            }));
+            showCreateJobCard('TIF Voxelizer 생성 job 제출 완료', data);
+            logTo('createLog', 'TIF Voxelizer 생성', data);
+        } catch (e) {
+            logTo('createLog', '오류', e.message || e);
+        }
+    }
+
+    async function ensureViewer() {
+        var api = getClient();
+        if (!viewer) {
+            viewer = api.createViewer('viewerCanvas', {
+                terrain: 'vworld',
+                imagery: 'vworld',
+                camera: { longitude: 127.0, latitude: 37.55, height: 70000 }
+            });
+            await viewer.ready();
+        }
+        return viewer;
+    }
+
+    function getViewerLayerName() {
+        return document.getElementById('viewerLayerName').value.trim()
+            || document.getElementById('layerNameInput').value.trim()
+            || document.getElementById('createTilesetName').value.trim();
+    }
+
+    function getViewerBBox() {
+        var west = readNumber('viewerAreaWest');
+        var south = readNumber('viewerAreaSouth');
+        var east = readNumber('viewerAreaEast');
+        var north = readNumber('viewerAreaNorth');
+        if ([west, south, east, north].every(function (v) { return v != null; })) {
+            return { west: west, south: south, east: east, north: north };
+        }
+        return null;
+    }
+
+    function setViewerBBox(bounds) {
+        document.getElementById('viewerAreaWest').value = bounds && bounds.west != null ? bounds.west : '';
+        document.getElementById('viewerAreaSouth').value = bounds && bounds.south != null ? bounds.south : '';
+        document.getElementById('viewerAreaEast').value = bounds && bounds.east != null ? bounds.east : '';
+        document.getElementById('viewerAreaNorth').value = bounds && bounds.north != null ? bounds.north : '';
+    }
+
+    function getViewerFilters() {
+        var filters = {};
+        var heightMin = readNumber('viewerHeightMin');
+        var heightMax = readNumber('viewerHeightMax');
+        var bbox = getViewerBBox();
+        var valueOp = document.getElementById('viewerValueOp').value;
+        var value1 = readNumber('viewerValue1');
+        var value2 = readNumber('viewerValue2');
+
+        if (heightMin != null) filters.height_min = heightMin;
+        if (heightMax != null) filters.height_max = heightMax;
+        if (bbox) {
+            filters.area_west = bbox.west;
+            filters.area_south = bbox.south;
+            filters.area_east = bbox.east;
+            filters.area_north = bbox.north;
+        }
+        if (valueOp && value1 != null) {
+            filters.value_op = valueOp;
+            filters.value1 = value1;
+            if (valueOp === 'range' && value2 != null) filters.value2 = value2;
+        }
+        return filters;
+    }
+
+    function resetViewerFilters() {
+        ['viewerHeightMin', 'viewerHeightMax', 'viewerValue1', 'viewerValue2', 'viewerAreaWest', 'viewerAreaSouth', 'viewerAreaEast', 'viewerAreaNorth', 'viewerHeightOffset'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('viewerValueOp').value = '';
+        document.getElementById('viewerHeightOffset').value = '0';
+        document.getElementById('viewerTerrainOpacity').value = '100';
+        updateViewerStyleLabels();
+        logTo('viewerLog', '뷰어', '조건 필터와 bbox 입력을 초기화했습니다.');
+    }
+
+    async function loadViewerTileset() {
+        return loadViewerTilesetWithOptions({
+            autoZoom: true,
+            logTitle: '뷰어 로드'
+        });
+    }
+
+    async function applyViewerFilters() {
+        return loadViewerTilesetWithOptions({
+            autoZoom: false,
+            logTitle: '필터 적용 조회'
+        });
+    }
+
+    function unloadCurrentViewerLayer() {
+        if (!viewer) return;
+        if (currentTilesetHandle) {
+            unregisterViewerTimeseriesBar();
+            stopViewerPointPlayback();
+            if (currentTilesetHandle._manualDataSource && viewer.cesiumViewer) {
+                viewer.cesiumViewer.dataSources.remove(currentTilesetHandle.dataSource, true);
+            } else {
+                viewer.unloadTileset(currentTilesetHandle);
+            }
+            currentTilesetHandle = null;
+        }
+        removeViewerGridSource();
+        clearViewerJsonUi();
+    }
+
+    async function loadViewerTilesetWithOptions(options) {
+        options = options || {};
+        try {
+            var name = getViewerLayerName();
+            if (!name) throw new Error('뷰어에 띄울 레이어 이름을 입력하세요.');
+            var v = await ensureViewer();
+            unloadCurrentViewerLayer();
+            var filters = getViewerFilters();
+            var heightOffset = readNumber('viewerHeightOffset');
+            currentTilesetHandle = await v.loadTileset(name, {
+                autoZoom: options.autoZoom !== false,
+                opacity: readViewerSliderOpacity('viewerOpacity'),
+                colormap: isViewerColormapEnabled() ? 'jet' : 'solid',
+                solidColor: document.getElementById('viewerSolidColor').value,
+                filters: filters,
+                shader: Object.keys(filters).length ? 'query' : undefined,
+                heightOffset: heightOffset
+            });
+            applyViewerStyle({ silent: true });
+            registerViewerTimeseriesBar(name, currentTilesetHandle);
+            await enhanceViewerJsonHandle(name, currentTilesetHandle);
+            logTo('viewerLog', options.logTitle || '뷰어 로드', {
+                layer_name: name,
+                filters: filters,
+                info: currentTilesetHandle.info || null
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function applyViewerStyle(options) {
+        options = options || {};
+        try {
+            if (!viewer || !currentTilesetHandle) {
+                if (options.silent) return;
+                throw new Error('먼저 레이어를 로드하세요.');
+            }
+            updateViewerStyleLabels();
+            var opacity = readViewerSliderOpacity('viewerOpacity');
+            var colormap = isViewerColormapEnabled() ? 'jet' : 'solid';
+            var color = document.getElementById('viewerSolidColor').value;
+            var heightOffset = readNumber('viewerHeightOffset') || 0;
+            var terrainOpacity = readViewerSliderOpacity('viewerTerrainOpacity');
+            viewer.setOpacity(currentTilesetHandle, opacity);
+            viewer.setColormap(currentTilesetHandle, colormap);
+            viewer.setSolidColor(currentTilesetHandle, color);
+            viewer.setHeightOffset(currentTilesetHandle, heightOffset);
+            viewer.setTerrainOpacity(terrainOpacity);
+            if (!options.silent) logTo('viewerLog', '뷰어 스타일 적용', {
+                opacity: opacity,
+                colormap: colormap,
+                solid_color: color,
+                height_offset: heightOffset,
+                terrain_opacity: terrainOpacity
+            });
+        } catch (e) {
+            if (!options.silent) logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function readViewerSliderOpacity(id) {
+        var value = parseFloat(document.getElementById(id).value || '100');
+        return Math.max(0, Math.min(1, value / 100));
+    }
+
+    function isViewerColormapEnabled() {
+        var toggle = document.getElementById('viewerColormapToggle');
+        return !toggle || toggle.dataset.enabled !== 'false';
+    }
+
+    function updateViewerColormapToggle() {
+        var toggle = document.getElementById('viewerColormapToggle');
+        if (!toggle) return;
+        var enabled = isViewerColormapEnabled();
+        toggle.textContent = enabled ? 'ON' : 'OFF';
+        toggle.classList.toggle('active', enabled);
+        toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    function updateViewerStyleLabels() {
+        var opacity = document.getElementById('viewerOpacity');
+        var opacityLabel = document.getElementById('viewerOpacityLabel');
+        if (opacity && opacityLabel) opacityLabel.textContent = Math.round(parseFloat(opacity.value || '100')) + '%';
+        var terrainOpacity = document.getElementById('viewerTerrainOpacity');
+        var terrainOpacityLabel = document.getElementById('viewerTerrainOpacityLabel');
+        if (terrainOpacity && terrainOpacityLabel) terrainOpacityLabel.textContent = Math.round(parseFloat(terrainOpacity.value || '100')) + '%';
+        updateViewerColormapToggle();
+    }
+
+    function bindViewerStyleControls() {
+        ['viewerOpacity', 'viewerTerrainOpacity', 'viewerSolidColor', 'viewerHeightOffset'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', function () {
+                updateViewerStyleLabels();
+                applyViewerStyle({ silent: true });
+            });
+        });
+        var colormapToggle = document.getElementById('viewerColormapToggle');
+        if (colormapToggle) {
+            colormapToggle.addEventListener('click', function () {
+                var enabled = colormapToggle.dataset.enabled !== 'false';
+                colormapToggle.dataset.enabled = enabled ? 'false' : 'true';
+                updateViewerStyleLabels();
+                applyViewerStyle({ silent: true });
+            });
+        }
+        updateViewerStyleLabels();
+    }
+
+    function zoomToCurrentTileset() {
+        try {
+            if (!viewer || !currentTilesetHandle) throw new Error('먼저 레이어를 로드하세요.');
+            viewer.zoomToTileset(currentTilesetHandle);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function removeViewerTileset() {
+        try {
+            unloadCurrentViewerLayer();
+            removeViewerGridSource();
+            logTo('viewerLog', '뷰어', '현재 tileset을 제거했습니다.');
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function viewNorth() {
+        try {
+            if (!viewer) throw new Error('뷰어를 먼저 초기화하세요.');
+            viewer.viewNorth();
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function zoomInViewer() {
+        try {
+            if (!viewer) throw new Error('뷰어를 먼저 초기화하세요.');
+            viewer.zoomIn();
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function zoomOutViewer() {
+        try {
+            if (!viewer) throw new Error('뷰어를 먼저 초기화하세요.');
+            viewer.zoomOut();
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function measureDistance() {
+        try {
+            var v = await ensureViewer();
+            var result = await v.measure.distance();
+            logTo('viewerLog', '거리 측정', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function measureArea() {
+        try {
+            var v = await ensureViewer();
+            var result = await v.measure.area();
+            logTo('viewerLog', '면적 측정', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function clearViewerMeasure() {
+        try {
+            if (!viewer) throw new Error('뷰어를 먼저 초기화하세요.');
+            viewer.measure.clear();
+            logTo('viewerLog', '측정', '측정 결과를 모두 제거했습니다.');
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function unregisterViewerTimeseriesBar() {
+        if (!currentTimeseriesBarName) return;
+        if (typeof TimeseriesBar !== 'undefined') {
+            try { TimeseriesBar.unregister(currentTimeseriesBarName); } catch (e) { }
+        }
+        currentTimeseriesBarName = null;
+    }
+
+    function registerViewerTimeseriesBar(name, handle) {
+        unregisterViewerTimeseriesBar();
+        if (!viewer || !handle || typeof TimeseriesBar === 'undefined') return;
+        var info = viewer.getTimeseries(handle);
+        if (!info || !info.count || info.count < 2) return;
+
+        var player = {
+            setFrame: function (idx) {
+                viewer.setTimeIndex(handle, idx);
+            },
+            setOpacity: function (opacity) {
+                viewer.setOpacity(handle, opacity);
+            },
+            setColorRange: function () {},
+            setMaxMode: function () {},
+            destroy: function () {
+                viewer.pause(handle);
+            }
+        };
+
+        TimeseriesBar.register(name, player, {
+            mode: 'voxel',
+            count: info.count,
+            timestamps: info.timestamps || [],
+            interpolate: true
+        }, viewer.cesiumViewer);
+        currentTimeseriesBarName = name;
+    }
+
+    async function selectViewerArea() {
+        try {
+            var v = await ensureViewer();
+            var bounds = await v.selectArea();
+            setViewerBBox(bounds);
+            logTo('viewerLog', '영역 선택', bounds);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function clearViewerArea() {
+        try {
+            if (!viewer) throw new Error('뷰어를 먼저 초기화하세요.');
+            viewer.clearArea();
+            setViewerBBox(null);
+            logTo('viewerLog', '영역 선택', '선택 영역을 제거했습니다.');
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function buildViewerQueryOptions(format) {
+        var bbox = getViewerBBox();
+        var filters = getViewerFilters();
+        var opts = { format: format };
+        if (bbox) opts.bbox = bbox;
+        if (filters.height_min != null) opts.height_min = filters.height_min;
+        if (filters.height_max != null) opts.height_max = filters.height_max;
+        if (filters.value_op) opts.value_op = filters.value_op;
+        if (filters.value1 != null) opts.value1 = filters.value1;
+        if (filters.value2 != null) opts.value2 = filters.value2;
+        if (format === 'detail') opts.limit = 20;
+        return opts;
+    }
+
+    async function runViewerQuery(format) {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var result = await api.tiles.query(name, buildViewerQueryOptions(format));
+            logTo('viewerLog', format === 'detail' ? '상세 쿼리' : '요약 쿼리', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function jsonNumberColor(value, minVal, maxVal, alpha) {
+        var range = maxVal - minVal;
+        var t = range > 0 ? (value - minVal) / range : 0.5;
+        var r, g, b;
+        if (t < 0.25)      { r = 0;             g = t * 4;               b = 1; }
+        else if (t < 0.5)  { r = 0;             g = 1;                   b = 1 - (t - 0.25) * 4; }
+        else if (t < 0.75) { r = (t - 0.5) * 4; g = 1;                  b = 0; }
+        else               { r = 1;             g = 1 - (t - 0.75) * 4; b = 0; }
+        return new Cesium.Color(r, g, b, alpha == null ? 0.65 : alpha);
+    }
+
+    function formatViewerJsonNumber(value) {
+        var num = Number(value);
+        var abs = Math.abs(num);
+        if (abs >= 1e8) return (num / 1e8).toFixed(1) + '억';
+        if (abs >= 1e4) return (num / 1e4).toFixed(0) + '만';
+        if (Math.abs(num) > 0 && Math.abs(num) < 1) return num.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+        return num.toLocaleString();
+    }
+
+    function detectViewerStatsField(geojson) {
+        var first = geojson.features && geojson.features[0] && geojson.features[0].properties || {};
+        var fields = geojson.stats_fields || Object.keys(first);
+        var skip = { code: true, name: true, name_eng: true, base_year: true, admin_level: true, coverage: true };
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields[i];
+            if (!skip[field] && typeof first[field] === 'number') return field;
+        }
+        return null;
+    }
+
+    function showViewerJsonLegend(title, minVal, maxVal) {
+        var legend = document.getElementById('viewerJsonLegend');
+        var canvas = document.getElementById('viewerJsonLegendCanvas');
+        if (!legend || !canvas) return;
+        document.getElementById('viewerJsonLegendTitle').textContent = title || 'value';
+        var ctx = canvas.getContext('2d');
+        for (var y = 0; y < canvas.height; y++) {
+            var t = 1 - y / canvas.height;
+            var c = jsonNumberColor(minVal + (maxVal - minVal) * t, minVal, maxVal, 1);
+            ctx.fillStyle = 'rgb(' + Math.round(c.red * 255) + ',' + Math.round(c.green * 255) + ',' + Math.round(c.blue * 255) + ')';
+            ctx.fillRect(0, y, canvas.width, 1);
+        }
+        document.getElementById('viewerJsonLegendMax').textContent = formatViewerJsonNumber(maxVal);
+        document.getElementById('viewerJsonLegendMid').textContent = formatViewerJsonNumber((minVal + maxVal) / 2);
+        document.getElementById('viewerJsonLegendMin').textContent = formatViewerJsonNumber(minVal);
+        legend.style.display = '';
+    }
+
+    function clearViewerJsonUi() {
+        var legend = document.getElementById('viewerJsonLegend');
+        var controls = document.getElementById('viewerPointControls');
+        var popup = document.getElementById('viewerFeaturePopup');
+        if (legend) legend.style.display = 'none';
+        if (controls) {
+            controls.style.display = 'none';
+            controls.innerHTML = '';
+        }
+        if (popup) popup.style.display = 'none';
+    }
+
+    function applyViewerGeoJsonStyle(dataSource, geojson, statsField) {
+        if (statsField) {
+            var values = (geojson.features || []).map(function (f) {
+                return f.properties && f.properties[statsField];
+            }).filter(function (v) { return typeof v === 'number'; });
+            if (!values.length) return;
+            var minVal = Math.min.apply(Math, values);
+            var maxVal = Math.max.apply(Math, values);
+            dataSource.entities.values.forEach(function (entity) {
+                var val = entity.properties && entity.properties[statsField] && entity.properties[statsField].getValue();
+                if (typeof val !== 'number') return;
+                var color = jsonNumberColor(val, minVal, maxVal, 0.65);
+                entity._jsonBaseColor = color;
+                entity._jsonAlphaFactor = 0.65;
+                if (entity.polygon) {
+                    entity.polygon.material = color;
+                    entity.polygon.outline = true;
+                    entity.polygon.outlineColor = Cesium.Color.WHITE.withAlpha(0.9);
+                }
+                var name = entity.properties && entity.properties.name && entity.properties.name.getValue() || '';
+                entity.label = {
+                    text: name + '\n' + formatViewerJsonNumber(val),
+                    font: 'bold 14px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 3,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.CENTER,
+                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    scaleByDistance: new Cesium.NearFarScalar(5e4, 1.0, 5e6, 0.4),
+                    translucencyByDistance: new Cesium.NearFarScalar(5e4, 1.0, 8e6, 0.0)
+                };
+            });
+            showViewerJsonLegend(statsField, minVal, maxVal);
+            return;
+        }
+
+        var colors = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'];
+        var codes = [];
+        (geojson.features || []).forEach(function (f) {
+            var code = f.properties && f.properties.code || '';
+            if (codes.indexOf(code) === -1) codes.push(code);
+        });
+        dataSource.entities.values.forEach(function (entity) {
+            var code = entity.properties && entity.properties.code && entity.properties.code.getValue() || '';
+            var color = Cesium.Color.fromCssColorString(colors[Math.max(0, codes.indexOf(code)) % colors.length]).withAlpha(0.45);
+            entity._jsonBaseColor = color;
+            entity._jsonAlphaFactor = 0.45;
+            if (entity.polygon) {
+                entity.polygon.material = color;
+                entity.polygon.outline = true;
+                entity.polygon.outlineColor = Cesium.Color.WHITE.withAlpha(0.7);
+            }
+            var regionName = entity.properties && entity.properties.name && entity.properties.name.getValue() || '';
+            if (regionName) {
+                entity.label = {
+                    text: regionName,
+                    font: '13px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.CENTER,
+                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    scaleByDistance: new Cesium.NearFarScalar(1e4, 1.0, 5e6, 0.3),
+                    translucencyByDistance: new Cesium.NearFarScalar(1e4, 1.0, 8e6, 0.0)
+                };
+            }
+        });
+    }
+
+    function getCesiumViewer() {
+        if (!viewer || !viewer.cesiumViewer) throw new Error('뷰어를 먼저 초기화하세요.');
+        return viewer.cesiumViewer;
+    }
+
+    function setupViewerJsonPickHandler() {
+        if (!viewer || !viewer.cesiumViewer || viewerJsonPickHandler) return;
+        viewerJsonPickHandler = new Cesium.ScreenSpaceEventHandler(viewer.cesiumViewer.scene.canvas);
+        viewerJsonPickHandler.setInputAction(function (click) {
+            var popup = document.getElementById('viewerFeaturePopup');
+            if (!popup) return;
+            popup.style.display = 'none';
+            var picked = viewer.cesiumViewer.scene.pick(click.position);
+            if (!Cesium.defined(picked) || !picked.id || !picked.id.properties) return;
+            var props = {};
+            picked.id.properties.propertyNames.forEach(function (name) {
+                props[name] = picked.id.properties[name] && picked.id.properties[name].getValue();
+            });
+            var title = props.name || props.station_name || props.code || props.station_id || 'feature';
+            var rows = Object.keys(props).filter(function (key) {
+                return key !== 'timeseries' && props[key] != null && typeof props[key] !== 'object';
+            }).slice(0, 12).map(function (key) {
+                var val = typeof props[key] === 'number' ? formatViewerJsonNumber(props[key]) : props[key];
+                return '<div><span style="color:#9cc8ff">' + escapeHtml(key) + '</span>: ' + escapeHtml(val) + '</div>';
+            }).join('');
+            popup.innerHTML = '<strong>' + escapeHtml(title) + '</strong><div style="margin-top:8px">' + rows + '</div>';
+            popup.style.display = '';
+            popup.style.left = Math.min(click.position.x + 16, viewer.cesiumViewer.scene.canvas.clientWidth - 340) + 'px';
+            popup.style.top = Math.max(10, Math.min(click.position.y - 10, viewer.cesiumViewer.scene.canvas.clientHeight - 260)) + 'px';
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    async function enhanceViewerJsonHandle(name, handle) {
+        if (!handle || !handle.dataSource || !handle.info || !handle.info.is_json_cube) return;
+        setupViewerJsonPickHandler();
+        if (handle.info.is_point_timeseries) {
+            var fields = handle.info.point_fields || [];
+            var entities = handle.dataSource.entities.values || [];
+            if (!fields.length && entities.length && entities[0]._pointTsData && entities[0]._pointTsData.length) {
+                var skip = { t: true, datetime: true, date: true, time: true, timestamp: true };
+                fields = Object.keys(entities[0]._pointTsData[0]).filter(function (key) {
+                    return !skip[key] && typeof entities[0]._pointTsData[0][key] === 'number';
+                }).map(function (key) { return { name: key, label: key }; });
+            }
+            viewerPointState = {
+                entities: entities,
+                fields: fields,
+                currentField: fields.length ? fields[0].name : null,
+                currentTimeIndex: 0,
+                totalTimeSteps: entities[0] && entities[0]._pointTsData ? entities[0]._pointTsData.length : 1,
+                playTimer: null
+            };
+            showViewerPointControls(name);
+            return;
+        }
+
+        try {
+            var geojson = await getClient().tiles.geojson(name);
+            applyViewerGeoJsonStyle(handle.dataSource, geojson, detectViewerStatsField(geojson));
+            await renderViewerCubeGrid(name, { silent: true });
+        } catch (e) {
+            // GeoJSON metadata is only needed for legend/labels; base rendering can still stay loaded.
+        }
+    }
+
+    async function loadViewerGeoJson() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var v = await ensureViewer();
+            var result = await api.tiles.geojson(name);
+            if (!result.features || !result.features.length) throw new Error('표시할 GeoJSON feature가 없습니다.');
+            unloadCurrentViewerLayer();
+            var dataSource = await Cesium.GeoJsonDataSource.load(result, {
+                clampToGround: true,
+                stroke: Cesium.Color.WHITE.withAlpha(0.9),
+                strokeWidth: 2
+            });
+            var statsField = detectViewerStatsField(result);
+            applyViewerGeoJsonStyle(dataSource, result, statsField);
+            v.cesiumViewer.dataSources.add(dataSource);
+            currentTilesetHandle = {
+                id: 'manual_json_' + Date.now(),
+                name: name,
+                dataSource: dataSource,
+                info: { is_json_cube: true, stats_field: statsField },
+                _manualDataSource: true
+            };
+            v.cesiumViewer.zoomTo(dataSource);
+            setupViewerJsonPickHandler();
+            try { await renderViewerCubeGrid(name, { silent: true }); } catch (gridError) {}
+            logTo('viewerLog', 'JSON 큐브 GeoJSON', {
+                feature_count: result.features ? result.features.length : 0,
+                stats_fields: result.stats_fields || null,
+                rendered: true,
+                stats_field: statsField,
+                data: result
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function buildViewerPointDataSource(geojson, info) {
+        var dataSource = new Cesium.CustomDataSource('viewerPointJson');
+        var fields = geojson.fields || info.point_fields || [];
+        if (!fields.length && geojson.features && geojson.features.length) {
+            var pointSkip = { station_id: true, station_name: true, name: true, longitude: true, latitude: true, lon: true, lat: true, x: true, y: true, datetime: true, date: true, time: true, timestamp: true, timeseries: true };
+            var firstProps = geojson.features[0].properties || {};
+            fields = Object.keys(firstProps).filter(function (key) {
+                return !pointSkip[key] && typeof firstProps[key] === 'number';
+            }).map(function (key) { return { name: key, label: key }; });
+        }
+        var field = fields.length ? fields[0].name : null;
+        var firstTs = geojson.features && geojson.features[0] && geojson.features[0].properties && geojson.features[0].properties.timeseries;
+        viewerPointState = {
+            entities: [],
+            fields: fields,
+            currentField: field,
+            currentTimeIndex: 0,
+            totalTimeSteps: firstTs ? firstTs.length : 1,
+            playTimer: null
+        };
+        (geojson.features || []).forEach(function (feature) {
+            var props = feature.properties || {};
+            var coords = feature.geometry && feature.geometry.coordinates || [0, 0, 0];
+            var entity = dataSource.entities.add({
+                position: Cesium.Cartesian3.fromDegrees(coords[0], coords[1], coords[2] || 0),
+                point: {
+                    pixelSize: 22,
+                    color: Cesium.Color.GRAY,
+                    outlineColor: Cesium.Color.WHITE,
+                    outlineWidth: 3,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    scaleByDistance: new Cesium.NearFarScalar(1e4, 1.2, 5e6, 0.6)
+                },
+                label: {
+                    text: props.station_name || props.name || '',
+                    font: 'bold 15px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 3,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -24),
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    scaleByDistance: new Cesium.NearFarScalar(1e4, 1.0, 5e6, 0.4),
+                    translucencyByDistance: new Cesium.NearFarScalar(1e4, 1.0, 5e6, 0.0)
+                }
+            });
+            entity._pointTsData = props.timeseries && props.timeseries.length ? props.timeseries : [props];
+            entity._stationName = props.station_name || props.name || props.station_id || '';
+            viewerPointState.entities.push(entity);
+        });
+        updateViewerPointColors(0);
+        return dataSource;
+    }
+
+    function updateViewerPointColors(timeIndex) {
+        var field = viewerPointState.currentField;
+        if (!field) return;
+        var values = [];
+        viewerPointState.entities.forEach(function (entity) {
+            var val = entity._pointTsData && entity._pointTsData[timeIndex] && entity._pointTsData[timeIndex][field];
+            if (typeof val === 'number') values.push(val);
+        });
+        if (!values.length) return;
+        var minVal = Math.min.apply(Math, values);
+        var maxVal = Math.max.apply(Math, values);
+        var fieldDef = viewerPointState.fields.find(function (f) { return f.name === field; }) || {};
+        viewerPointState.entities.forEach(function (entity) {
+            var val = entity._pointTsData && entity._pointTsData[timeIndex] && entity._pointTsData[timeIndex][field];
+            if (typeof val !== 'number') return;
+            var range = maxVal - minVal;
+            var t = range > 0 ? (val - minVal) / range : 0.5;
+            entity.point.color = jsonNumberColor(val, minVal, maxVal, 0.85);
+            entity.point.pixelSize = 18 + t * 18;
+            entity.label.text = entity._stationName + '\n' + formatViewerJsonNumber(val) + (fieldDef.unit ? ' ' + fieldDef.unit : '');
+        });
+        showViewerJsonLegend(fieldDef.label || field, minVal, maxVal);
+        var timeLabel = document.getElementById('viewerPointTimeLabel');
+        if (timeLabel) {
+            var t0 = viewerPointState.entities[0] && viewerPointState.entities[0]._pointTsData && viewerPointState.entities[0]._pointTsData[timeIndex];
+            timeLabel.textContent = t0 && (t0.t || t0.datetime || t0.time) || String(timeIndex);
+        }
+    }
+
+    function showViewerPointControls(name) {
+        var controls = document.getElementById('viewerPointControls');
+        if (!controls) return;
+        var fields = viewerPointState.fields || [];
+        controls.innerHTML =
+            '<div style="font-weight:800;color:#103250;margin-bottom:8px">' + escapeHtml(name) + ' point 시계열</div>' +
+            '<div class="viewer-point-control-grid">' +
+            '<div class="field" style="margin:0"><label for="viewerPointField">측정 필드</label><select id="viewerPointField">' +
+            fields.map(function (f) { return '<option value="' + escapeHtml(f.name) + '">' + escapeHtml((f.label || f.name) + (f.unit ? ' (' + f.unit + ')' : '')) + '</option>'; }).join('') +
+            '</select></div>' +
+            '<div class="field" style="margin:0"><label for="viewerPointTime">시간 <span id="viewerPointTimeLabel"></span></label><input type="range" id="viewerPointTime" min="0" max="' + Math.max(0, viewerPointState.totalTimeSteps - 1) + '" value="0"></div>' +
+            '<button class="btn btn-primary" id="viewerPointPlay">재생</button>' +
+            '<button class="btn btn-secondary" id="viewerPointStop">정지</button>' +
+            '</div>';
+        controls.style.display = '';
+        document.getElementById('viewerPointField').addEventListener('change', function (e) {
+            viewerPointState.currentField = e.target.value;
+            updateViewerPointColors(viewerPointState.currentTimeIndex);
+        });
+        document.getElementById('viewerPointTime').addEventListener('input', function (e) {
+            viewerPointState.currentTimeIndex = parseInt(e.target.value, 10) || 0;
+            updateViewerPointColors(viewerPointState.currentTimeIndex);
+        });
+        document.getElementById('viewerPointPlay').addEventListener('click', startViewerPointPlayback);
+        document.getElementById('viewerPointStop').addEventListener('click', stopViewerPointPlayback);
+        updateViewerPointColors(0);
+    }
+
+    function startViewerPointPlayback() {
+        if (viewerPointState.playTimer || viewerPointState.totalTimeSteps <= 1) return;
+        viewerPointState.playTimer = setInterval(function () {
+            viewerPointState.currentTimeIndex = (viewerPointState.currentTimeIndex + 1) % viewerPointState.totalTimeSteps;
+            var slider = document.getElementById('viewerPointTime');
+            if (slider) slider.value = viewerPointState.currentTimeIndex;
+            updateViewerPointColors(viewerPointState.currentTimeIndex);
+        }, 900);
+    }
+
+    function stopViewerPointPlayback() {
+        if (viewerPointState.playTimer) {
+            clearInterval(viewerPointState.playTimer);
+            viewerPointState.playTimer = null;
+        }
+    }
+
+    async function loadViewerPoints() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var v = await ensureViewer();
+            var result = await api.tiles.points(name);
+            if (!result.features || !result.features.length) throw new Error('표시할 point feature가 없습니다.');
+            unloadCurrentViewerLayer();
+            var info = {};
+            try { info = await api.tiles.info(name); } catch (e) {}
+            var dataSource = buildViewerPointDataSource(result, info || {});
+            v.cesiumViewer.dataSources.add(dataSource);
+            currentTilesetHandle = {
+                id: 'manual_point_' + Date.now(),
+                name: name,
+                dataSource: dataSource,
+                info: Object.assign({}, info || {}, { is_json_cube: true, is_point_timeseries: true }),
+                _manualDataSource: true
+            };
+            v.cesiumViewer.zoomTo(dataSource);
+            showViewerPointControls(name);
+            setupViewerJsonPickHandler();
+            logTo('viewerLog', 'JSON 큐브 Points', {
+                feature_count: result.features ? result.features.length : 0,
+                fields: result.fields || null,
+                time_range: result.time_range || null,
+                rendered: true,
+                data: result
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    function removeViewerGridSource() {
+        if (viewer && viewer.cesiumViewer && currentViewerGridSource) {
+            viewer.cesiumViewer.dataSources.remove(currentViewerGridSource, true);
+        }
+        currentViewerGridSource = null;
+        viewerCubeGridTiles = [];
+        if (viewerCubeGridMoveHandler) {
+            try { viewerCubeGridMoveHandler.destroy(); } catch (e) {}
+            viewerCubeGridMoveHandler = null;
+        }
+        var popup = document.getElementById('viewerFeaturePopup');
+        if (popup) popup.style.display = 'none';
+    }
+
+    function renderViewerCubeTooltip(tile, screenPos) {
+        var popup = document.getElementById('viewerFeaturePopup');
+        if (!popup) return;
+        if (!tile) {
+            popup.style.display = 'none';
+            return;
+        }
+        var html = '<div style="color:#ffd700;font-weight:800;margin-bottom:6px;border-bottom:1px solid rgba(255,255,0,0.3);padding-bottom:4px">Cube ' + escapeHtml(tile.tileId || '') + '</div>';
+        var regions = tile.regions || [];
+        if (!regions.length) {
+            html += '<div style="color:#aaa">이 타일에 연결된 region 요약이 없습니다.</div>';
+        }
+        regions.slice(0, 14).forEach(function (region) {
+            html += '<div style="padding:2px 0;display:flex;justify-content:space-between;gap:12px">';
+            html += '<span style="color:#8cf">' + escapeHtml(region.name || region.code || '') + '</span>';
+            if (region.statistics) {
+                var values = Object.keys(region.statistics).filter(function (key) {
+                    return key !== 'name';
+                }).map(function (key) {
+                    var val = region.statistics[key];
+                    return '<b>' + escapeHtml(typeof val === 'number' ? formatViewerJsonNumber(val) : val) + '</b>';
+                });
+                html += '<span>' + values.join(' ') + '</span>';
+            } else {
+                html += '<span style="color:#aaa">' + Math.round((region.coverage || 0) * 100) + '%</span>';
+            }
+            html += '</div>';
+        });
+        popup.innerHTML = html;
+        popup.style.display = '';
+        popup.style.left = Math.min(screenPos.x + 16, viewer.cesiumViewer.scene.canvas.clientWidth - 340) + 'px';
+        popup.style.top = Math.max(10, Math.min(screenPos.y - 10, viewer.cesiumViewer.scene.canvas.clientHeight - 260)) + 'px';
+    }
+
+    function viewerLonLatFromScreenPosition(screenPosition) {
+        if (!viewer || !viewer.cesiumViewer || !screenPosition) return null;
+        var scene = viewer.cesiumViewer.scene;
+        var cartesian = null;
+        try {
+            if (scene.pickPositionSupported) {
+                cartesian = scene.pickPosition(screenPosition);
+            }
+        } catch (e) {}
+        if (!cartesian) {
+            try {
+                var ray = viewer.cesiumViewer.camera.getPickRay(screenPosition);
+                cartesian = ray ? scene.globe.pick(ray, scene) : null;
+            } catch (e2) {}
+        }
+        if (!cartesian) {
+            try {
+                cartesian = viewer.cesiumViewer.camera.pickEllipsoid(screenPosition, scene.globe.ellipsoid);
+            } catch (e3) {}
+        }
+        if (!cartesian) return null;
+        var carto = Cesium.Cartographic.fromCartesian(cartesian);
+        return {
+            lon: Cesium.Math.toDegrees(carto.longitude),
+            lat: Cesium.Math.toDegrees(carto.latitude)
+        };
+    }
+
+    function setupViewerCubeGridTooltip() {
+        if (!viewer || !viewer.cesiumViewer) return;
+        if (viewerCubeGridMoveHandler) {
+            try { viewerCubeGridMoveHandler.destroy(); } catch (e) {}
+        }
+        var canvas = viewer.cesiumViewer.scene.canvas;
+        var shell = document.querySelector('.viewer-canvas-shell') || canvas.parentElement || canvas;
+        var onMove = function (event) {
+            var canvasRect = canvas.getBoundingClientRect();
+            var shellRect = shell.getBoundingClientRect();
+            var canvasPos = new Cesium.Cartesian2(
+                event.clientX - canvasRect.left,
+                event.clientY - canvasRect.top
+            );
+            var popupPos = {
+                x: event.clientX - shellRect.left,
+                y: event.clientY - shellRect.top
+            };
+            var found = null;
+            var picked = viewer.cesiumViewer.scene.pick(canvasPos);
+            if (Cesium.defined(picked) && picked.id && picked.id._viewerCubeTile) {
+                found = picked.id._viewerCubeTile;
+            }
+            var coord = viewerLonLatFromScreenPosition(canvasPos);
+            if (!found && coord) {
+                found = viewerCubeGridTiles.find(function (tile) {
+                    return coord.lon >= tile.west && coord.lon <= tile.east && coord.lat >= tile.south && coord.lat <= tile.north;
+                });
+            }
+            renderViewerCubeTooltip(found, popupPos);
+        };
+        var onLeave = function () {
+            renderViewerCubeTooltip(null, { x: 0, y: 0 });
+        };
+        canvas.addEventListener('mousemove', onMove);
+        canvas.addEventListener('mouseleave', onLeave);
+        viewerCubeGridMoveHandler = {
+            destroy: function () {
+                canvas.removeEventListener('mousemove', onMove);
+                canvas.removeEventListener('mouseleave', onLeave);
+            }
+        };
+    }
+
+    async function renderViewerCubeGrid(name, options) {
+        options = options || {};
+        var api = getClient();
+        var v = await ensureViewer();
+        var result = options.result || await api.tiles.cubegrid(name);
+        if (!result.features || !result.features.length) {
+            if (!options.silent) throw new Error('표시할 cubegrid feature가 없습니다.');
+            return null;
+        }
+        removeViewerGridSource();
+        var dataSource = new Cesium.CustomDataSource('viewerCubeGrid_' + name);
+        viewerCubeGridTiles = [];
+        result.features.forEach(function (feature) {
+            var coords = feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates[0] || [];
+            if (!coords.length) return;
+            var tileInfo = {
+                west: Math.min.apply(Math, coords.map(function (c) { return c[0]; })),
+                east: Math.max.apply(Math, coords.map(function (c) { return c[0]; })),
+                south: Math.min.apply(Math, coords.map(function (c) { return c[1]; })),
+                north: Math.max.apply(Math, coords.map(function (c) { return c[1]; })),
+                tileId: feature.properties && feature.properties.tile_id,
+                regions: feature.properties && feature.properties.regions || []
+            };
+            var entity = dataSource.entities.add({
+                polygon: {
+                    hierarchy: coords.slice(0, -1).map(function (c) { return Cesium.Cartesian3.fromDegrees(c[0], c[1]); }),
+                    material: Cesium.Color.YELLOW.withAlpha(0.01),
+                    outline: false,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                },
+                polyline: {
+                    positions: coords.map(function (c) { return Cesium.Cartesian3.fromDegrees(c[0], c[1]); }),
+                    width: 2,
+                    material: Cesium.Color.YELLOW.withAlpha(0.72),
+                    clampToGround: true
+                }
+            });
+            entity._viewerCubeTile = tileInfo;
+            viewerCubeGridTiles.push(tileInfo);
+        });
+        v.cesiumViewer.dataSources.add(dataSource);
+        currentViewerGridSource = dataSource;
+        setupViewerCubeGridTooltip();
+        return result;
+    }
+
+    async function loadViewerCubeGrid() {
+        try {
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var result = await renderViewerCubeGrid(name);
+            logTo('viewerLog', 'JSON 큐브 Grid', {
+                tile_count: result.tile_count,
+                tile_level: result.tile_level,
+                tile_size_deg: result.tile_size_deg,
+                rendered: true,
+                data: result
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function computeViewerVolume() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            var bbox = getViewerBBox();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            if (!bbox) throw new Error('볼륨 계산에는 bbox 입력 또는 영역 선택이 필요합니다.');
+            var result = await api.tiles.volumeAsync(name, bbox.west, bbox.south, bbox.east, bbox.north, {
+                onProgress: function (status) {
+                    logTo('viewerLog', '볼륨 계산 진행', status);
+                }
+            });
+            logTo('viewerLog', '볼륨 계산 결과', result.result || result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function downloadAnalysisJobResult(jobId, fallbackName) {
+        var api = getClient();
+        var result = await api.tiles.downloadJobResult(jobId);
+        if (result instanceof Blob) {
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(result);
+            link.download = fallbackName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function () { URL.revokeObjectURL(link.href); }, 1500);
+            return { downloaded: true, filename: fallbackName, size: result.size };
+        }
+        return result;
+    }
+
+    async function exportViewerGlb() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var opts = buildViewerQueryOptions('summary');
+            opts.min_level = 0;
+            var selectedLevel = readInteger('viewerCoordLevel');
+            if (selectedLevel != null) opts.max_level = selectedLevel;
+            var status = await api.tiles.exportGlbAsync(name, opts, {
+                onProgress: function (progress) {
+                    logTo('viewerLog', 'GLB 내보내기 진행', progress);
+                }
+            });
+            var download = await downloadAnalysisJobResult(status.job_id, name + '_glb.zip');
+            logTo('viewerLog', 'GLB 내보내기 완료', {
+                status: status,
+                download: download
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function exportViewerBinary() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var opts = buildViewerQueryOptions('summary');
+            opts.min_level = 0;
+            var selectedLevel = readInteger('viewerCoordLevel');
+            if (selectedLevel != null) opts.max_level = selectedLevel;
+            var status = await api.tiles.exportBinaryAsync(name, opts, {
+                onProgress: function (progress) {
+                    logTo('viewerLog', 'Binary 내보내기 진행', progress);
+                }
+            });
+            var download = await downloadAnalysisJobResult(status.job_id, name + '_binary.zip');
+            logTo('viewerLog', 'Binary 내보내기 완료', {
+                status: status,
+                download: download
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function exportViewer3dTiles() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var opts = buildViewerQueryOptions('summary');
+            var selectedLevel = readInteger('viewerCoordLevel');
+            if (selectedLevel != null) {
+                opts.min_level = selectedLevel;
+                opts.max_level = selectedLevel;
+            }
+            var job = await api.tiles.submitExport3dTilesAsync(name, opts);
+            if (job.job_id) document.getElementById('jobIdInput').value = job.job_id;
+            var status = await api.tiles.waitJob(job.job_id, {
+                onProgress: function (progress) {
+                    logTo('viewerLog', '3D Tiles 내보내기 진행', progress);
+                }
+            });
+            var download = await downloadAnalysisJobResult(status.job_id, name + '_3dtiles.zip');
+            logTo('viewerLog', '3D Tiles 내보내기 완료', {
+                status: status,
+                download: download
+            });
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function viewerCoordToIndex() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var lon = readNumber('viewerCoordLon');
+            var lat = readNumber('viewerCoordLat');
+            if (lon == null || lat == null) throw new Error('경도와 위도를 입력하세요.');
+            var result = await api.tiles.coordToIndex(
+                name,
+                lon,
+                lat,
+                readNumber('viewerCoordHeight') || 0,
+                readInteger('viewerCoordLevel')
+            );
+            if (result.datacube) {
+                document.getElementById('viewerIdxCol').value = result.datacube.col != null ? result.datacube.col : '';
+                document.getElementById('viewerIdxRow').value = result.datacube.row != null ? result.datacube.row : '';
+                document.getElementById('viewerIdxFloor').value = result.datacube.floor != null ? result.datacube.floor : '';
+                document.getElementById('viewerDatacubeId').value = result.datacube.id || document.getElementById('viewerDatacubeId').value;
+            }
+            if (result.voxel) {
+                document.getElementById('viewerIdxVx').value = result.voxel.vx != null ? result.voxel.vx : '';
+                document.getElementById('viewerIdxVy').value = result.voxel.vy != null ? result.voxel.vy : '';
+                document.getElementById('viewerIdxVz').value = result.voxel.vz != null ? result.voxel.vz : '';
+            }
+            logTo('viewerLog', '좌표 → 인덱스', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function viewerIndexToCoord() {
+        try {
+            var api = getClient();
+            var name = getViewerLayerName();
+            if (!name) throw new Error('레이어 이름을 입력하세요.');
+            var col = readInteger('viewerIdxCol');
+            var row = readInteger('viewerIdxRow');
+            if (col == null || row == null) throw new Error('col, row를 입력하세요.');
+            var voxel = null;
+            var vx = readInteger('viewerIdxVx');
+            var vy = readInteger('viewerIdxVy');
+            var vz = readInteger('viewerIdxVz');
+            if (vx != null && vy != null && vz != null) voxel = { vx: vx, vy: vy, vz: vz };
+            var result = await api.tiles.indexToCoord(
+                name,
+                col,
+                row,
+                readInteger('viewerIdxFloor') || 0,
+                voxel,
+                readInteger('viewerCoordLevel')
+            );
+            logTo('viewerLog', '인덱스 → 좌표', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    async function loadViewerDatacube() {
+        try {
+            var api = getClient();
+            var datacubeId = document.getElementById('viewerDatacubeId').value.trim();
+            if (!datacubeId) throw new Error('Datacube ID를 입력하세요.');
+            var result = await api.tiles.datacube(datacubeId, {
+                format: document.getElementById('viewerDatacubeFormat').value,
+                include_data: true,
+                limit: 200
+            });
+            logTo('viewerLog', 'Datacube 조회', result);
+        } catch (e) {
+            logTo('viewerLog', '오류', e.message || e);
+        }
+    }
+
+    document.addEventListener('dragover', preventFileNavigation);
+    document.addEventListener('drop', preventFileNavigation);
+    document.querySelectorAll('button:not([type])').forEach(function (button) {
+        button.type = 'button';
+    });
+
+    document.getElementById('tiles3dFiles').addEventListener('change', function () { upload3DTiles(this.files); this.value = ''; });
+    document.getElementById('tiles3dFolder').addEventListener('change', function () { upload3DTiles(this.files); this.value = ''; });
+    document.getElementById('lasFiles').addEventListener('change', function () { uploadLas(this.files); this.value = ''; });
+    document.getElementById('tifFiles').addEventListener('change', function () { uploadTif(this.files); this.value = ''; });
+    document.getElementById('netcdfFiles').addEventListener('change', function () { uploadNetcdf(this.files); this.value = ''; });
+    document.getElementById('netcdfFolder').addEventListener('change', function () { uploadNetcdf(this.files); this.value = ''; });
+    document.getElementById('cubeFiles').addEventListener('change', function () { uploadCube(this.files); this.value = ''; });
+    document.getElementById('cubeFolder').addEventListener('change', function () { uploadCube(this.files); this.value = ''; });
+    document.getElementById('shpFiles').addEventListener('change', function () { uploadShp(this.files); this.value = ''; });
+    document.getElementById('demFile').addEventListener('change', function () { uploadDem(this.files); this.value = ''; });
+    document.getElementById('statsGeojsonInput').addEventListener('change', function () { uploadJsonGeojson(this.files); this.value = ''; });
+    document.getElementById('statsCsvInput').addEventListener('change', function () { uploadJsonCsv(this.files); this.value = ''; });
+    document.getElementById('pointCsvInput').addEventListener('change', function () { uploadPointCsv(this.files); this.value = ''; });
+    document.querySelectorAll('input[name="shpType"]').forEach(function (radio) {
+        radio.addEventListener('change', updateShpTypeUi);
+    });
+    document.getElementById('shpHeightField').addEventListener('change', updateShpCustomFieldUi);
+    document.getElementById('shpZField').addEventListener('change', updateShpCustomFieldUi);
+    bindViewerStyleControls();
+    document.getElementById('shpPerFilePanels').addEventListener('change', function (e) {
+        var tr = e.target.closest('tr');
+        if (!tr) return;
+        if (e.target.classList.contains('pf-type')) {
+            var diameter = tr.querySelector('.pf-pointdiam');
+            diameter.disabled = e.target.value !== 'point_type';
+            if (e.target.value === 'point_type') {
+                if (!diameter.value) diameter.value = '1';
+                tr.querySelector('.pf-zfield').value = '__default_dem__';
+            } else {
+                diameter.value = '';
+            }
+        }
+        if (e.target.classList.contains('pf-height')) {
+            tr.querySelector('.pf-height-custom').style.display = e.target.value === '__custom__' ? '' : 'none';
+        }
+        if (e.target.classList.contains('pf-zfield')) {
+            tr.querySelector('.pf-z-custom').style.display = e.target.value === '__custom__' ? '' : 'none';
+        }
+    });
+    toggleStatsMode();
+    toggleNetcdfMode();
+    updateShpTypeUi();
+    wireDropZone('tiles3dDropZone', upload3DTiles);
+    wireDropZone('lasDropZone', uploadLas);
+    wireDropZone('tifDropZone', uploadTif);
+    wireDropZone('netcdfDropZone', uploadNetcdf);
+    wireDropZone('cubeDropZone', uploadCube);
+    wireDropZone('shpDropZone', uploadShp);
+    wireDropZone('statsGeojsonZone', uploadJsonGeojson);
+    wireDropZone('statsCsvZone', uploadJsonCsv);
+    wireDropZone('pointCsvZone', uploadPointCsv);
+</script>
+</body>
+</html>

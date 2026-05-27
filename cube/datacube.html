@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<head>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+            box-sizing: border-box;
+            font: 'Pretendard';
+        }
+
+        #output {
+            width: 100%;
+            height: 100px;
+            background-color: whitesmoke;
+            border-radius: 0.5rem;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer" style="width: 100%;"></div>
+    <input type="file" id="fileInput"></input>
+    <button id="loadBtn">로드</button>
+    <button id="jobBtn">확인</button>
+    <pre id="output"></pre>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Cesium.js"></script>
+    <script src="./docker/datacube-javascript-client-0.2.1/datacube-sdk.js"></script>
+    <script src="./docker/datacube-javascript-client-0.2.1/datacube-viewer.js"></script>
+    <script>
+
+        var client = null;
+        var jobId = null;
+
+
+        // 파일 입력 요소 가져오기
+        const fileInput = document.getElementById('fileInput');
+
+
+        (async function () {
+            client = new DataCubeClient('http://localhost:5003', {
+                apiKey: 'dcube_f3ec12644379098c506ca83c5d511897'
+            });
+
+            const viewer = client.createViewer('cesiumContainer', {
+                terrain: 'vworld',
+                imagery: 'vworld'
+            });
+
+            await viewer.ready();
+            const handle = await viewer.loadTileset('cube', { autoZoom: true });
+            viewer.setOpacity(handle, 0.85);
+        })();
+
+        const cesiumCanvas = document.querySelector('canvas')
+        cesiumCanvas.style.width = '100%'
+        cesiumCanvas.style.height = '590px'
+
+        // 로드 
+        const loadBtn = document.getElementById('loadBtn')
+        loadBtn.addEventListener('click', (async function () {
+            console.log(fileInput.files)
+            const upload = await client.data.uploadCube(fileInput.files);
+
+            const submit = await client.data.createCube('ss', upload.upload_dir)
+            console.log(submit.job_id)
+            jobId = submit.job_id
+
+
+        }))
+
+        // Job 상태 확인 
+        const jobBtn = document.getElementById('jobBtn')
+        const out = document.getElementById('output')
+        let finalStatus = null;
+        jobBtn.addEventListener('click', async () => {
+
+            // 버튼 실행 막기
+            jobBtn.disabled = true;
+            out.textContent = '[로드 실행 중 •••]'
+
+            // 20초마다 반복
+            let intervalId = setInterval(async () => {
+
+                const detail = await client.data.jobStatus(jobId);
+                const logs = detail.log.split('\n') // 로그 분리
+                let log = logs[logs.length - 1]
+
+                if (log.includes('|')) {
+                    log = log.replaceAll('|', '\n')
+                    out.textContent = log;
+                } else {
+                    out.textContent = log;
+                }
+
+                if (log == "") {
+                    out.textContent = '[로드 종료]'
+                    clearInterval(intervalId)
+                    intervalId = null
+                }
+
+            }, 10000)
+
+            jobBtn.disabled = false;
+        });
+
+        // delete layer
+        // save other type data 
+        // cube 접근
+
+
+
+    </script>
+</body>
