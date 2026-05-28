@@ -25,26 +25,36 @@
 
 <body>
     <div id="cesiumContainer" style="width: 100%;"></div>
-    <input type="file" id="fileInput"></input>
-    <button id="loadBtn">로드</button>
+    <div id="container">
+        <select id="fileType" name="fileType">
+            <option value="default">파일 형식을 선택하세요</option>
+            <option value="tiles">3D Tiles</option>
+            <option value="las">LAS</option>
+            <option value="tif">TIF</option>
+            <option value="netcdf">NetCDF</option>
+            <option value="cube">Cube</option>
+            <option value="shp">SHP</option>
+            <option value="json">JSON</option>
+            <option value="csv">CSV</option>
+        </select>
+        <div id="dynamicOptions" style="margin-left: 10px; display: inline-block;"></div>
+    </div>
+    <input type="file" id="input"></input>
+    <button id="load">로드</button>
     <button id="jobBtn">확인</button>
+    <button id="deleteBtn">삭제</button>
     <pre id="output"></pre>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Cesium.js"></script>
     <script src="./docker/datacube-javascript-client-0.2.1/datacube-sdk.js"></script>
     <script src="./docker/datacube-javascript-client-0.2.1/datacube-viewer.js"></script>
-    <script>
+    <script type="module">
+        let client = null;
+        let jobId = null;
 
-        var client = null;
-        var jobId = null;
-
-
-        // 파일 입력 요소 가져오기
-        const fileInput = document.getElementById('fileInput');
-
-
+        // 초기화
         (async function () {
             client = new DataCubeClient('http://localhost:5003', {
-                apiKey: 'dcube_f3ec12644379098c506ca83c5d511897'
+                apiKey: `dcube_f3ec12644379098c506ca83c5d511897`
             });
 
             const viewer = client.createViewer('cesiumContainer', {
@@ -53,7 +63,7 @@
             });
 
             await viewer.ready();
-            const handle = await viewer.loadTileset('cube', { autoZoom: true });
+            const handle = await viewer.loadTileset(`ss`);
             viewer.setOpacity(handle, 0.85);
         })();
 
@@ -62,14 +72,111 @@
         cesiumCanvas.style.height = '590px'
 
         // 로드 
-        const loadBtn = document.getElementById('loadBtn')
-        loadBtn.addEventListener('click', (async function () {
-            console.log(fileInput.files)
-            const upload = await client.data.uploadCube(fileInput.files);
+        const load = document.getElementById('load');
+        const fileType = document.getElementById('fileType')
+        let type = 'default';
+        const container = document.getElementById('container')
+        const dynamicOptions = document.getElementById('dynamicOptions');
+        var upload = null;
+        var submit = null;
 
-            const submit = await client.data.createCube('ss', upload.upload_dir)
-            console.log(submit.job_id)
-            jobId = submit.job_id
+        // json 선택시
+        fileType.addEventListener('change', () => {
+            type = fileType.value
+            dynamicOptions.innerHTML = '';
+
+            if (type == 'json') {
+                const levels = [
+                    { value: 'sido', label: '시도' },
+                    { value: 'sigungu', label: '시군구' },
+                    { value: 'emd', label: '읍면동' }
+                ];
+
+                levels.forEach((item, index) => {
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'adminLevel';
+                    radio.value = item.value;
+                    radio.id = `adminLevel_${item.value}`;
+                    if (index === 0) radio.checked = true;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `adminLevel_${item.value}`;
+                    label.textContent = item.label;
+                    label.style.marginLeft = '5px';
+                    label.style.marginRight = '15px';
+
+                    dynamicOptions.appendChild(radio);
+                    dynamicOptions.appendChild(label);
+                });
+            }
+        })
+
+        // 로드 버튼 클릭시
+        load.addEventListener('click', (async function () {
+            var file = document.getElementById('input').files;
+            console.log(file)
+            switch (type) {
+                case 'tiles':
+                    upload = await client.data.uploadGlb(file);
+                    submit = await client.data.createGlb('ss', upload.upload_dir)
+                    jobId = submit.job_id
+                    break;
+                case 'las':
+                    upload = await client.data.uploadLas(file);
+                    submit = await client.data.createLas('ss', upload.las_file)
+                    jobId = submit.job_id
+                    break;
+                case 'tif':
+                    upload = await client.data.uploadTif(file);
+                    submit = await client.data.createTif('ss', upload.tif_file, {
+                        max_level: 12
+                    })
+                    jobId = submit.job_id
+                    break;
+                case 'netcdf':
+                    upload = await client.data.uploadNetcdf(file);
+                    submit = await client.data.createNetcdf('ss', {
+                        mode: 'single',
+                        data_type: 'wind',
+                        u_file: upload.files[0],
+                        v_file: upload.files[1],
+                        max_level: 3,
+                        voxel_resolution: 64,
+                        value_type: 'float',
+                        tile_height: 4000000,
+                        subtree_levels: 3
+                    })
+                    jobId = submit.job_id
+                    break;
+                case 'cube':
+                    upload = await client.data.uploadCube(file);
+                    submit = await client.data.createCube(`ss`, upload.upload_dir)
+                    jobId = submit.job_id
+                    break;
+                case 'shp':  //building은 되는데 point는 안됨!
+                    upload = await client.data.uploadShp(file);
+                    submit = await client.data.createShp(`ss`, upload.shp_files)
+                    jobId = submit.job_id
+                    break;
+                case 'json':
+                    const checkedRadio = document.querySelector('input[name="adminLevel"]:checked');
+                    const adminLevelVal = checkedRadio ? checkedRadio.value : 'sido';
+                    upload = await client.data.uploadJson(file[0]);
+                    submit = await client.data.createAdmin(`ss`, upload.filepath, {
+                        admin_level: adminLevelVal
+                    })
+                    jobId = submit.job_id
+                    break;
+                case 'csv':
+                    upload = await client.data.uploadJson(file[0]);
+                    submit = await client.data.createPoint(`ss`, upload.filepath, {
+                        shp_type: 'point_type'
+                    })
+                    jobId = submit.job_id
+                    break;
+                default: console.log('파일 형식을 선택하세요')
+            }
 
 
         }))
@@ -110,8 +217,10 @@
         });
 
         // delete layer
-        // save other type data 
-        // cube 접근
+        const deleteBtn = document.getElementById('deleteBtn');
+        deleteBtn.addEventListener('click', async () => {
+            await client.layers.delete('ss');
+        })
 
 
 
