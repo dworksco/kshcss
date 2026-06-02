@@ -2,47 +2,127 @@
 
 <head>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        * {
+            font-family: 'Noto Sans KR' !important;
+        }
+
         html,
         body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow-y: auto;
             box-sizing: border-box;
-            font: 'Pretendard';
         }
 
         #output {
-            width: 100%;
+            width: 98%;
             height: 100px;
             background-color: whitesmoke;
             border-radius: 0.5rem;
             white-space: pre-line;
+            margin: 10px auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 58px;
+            width: fit-content;
+            gap: 10px;
+            background-color: #efefef;
+            border: transparent;
+            border-radius: 999px;
+            color: #000;
+            font-weight: 500;
+            padding: 0.25em 1em;
+            cursor: pointer;
+        }
+
+        .container {
+            margin-left: 10px;
+            margin-top: 5px;
+        }
+
+        #selectContainer {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: fit-content;
+            background-color: #efefef;
+            padding: 0.25em;
+            z-index: 0;
+        }
+        
+        #selectContainer svg{
+            position: absolute; 
+            z-index: 1;
+        }
+
+        option{
+            appearance: base-select;
+            background-color: #efefef;
+        }
+
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            background: none;
+            padding: 0.25em 1.25em 0.25em 1.25em;
+            z-index: 2;
+        }
+
+        #input {
+            /* background-color: #efefef; */
+            border-radius: 36px;
+            /* padding: 4px; */
+        }
+
+        input[type='file']::file-selector-button {
+            background-color: #000;
+            color: #fff;
+            font-weight: 500;
+            border: none;
+            border-radius: 36px;
+            padding: 0.25em 1em;
+            /* box-shadow: 0px 2px 8px 0.16px rgba(0, 0, 0, 0.16); */
         }
     </style>
 </head>
 
 <body>
-    <div id="cesiumContainer" style="width: 100%;"></div>
-    <div id="container">
-        <select id="fileType" name="fileType">
-            <option value="default">파일 형식을 선택하세요</option>
-            <option value="tiles">3D Tiles</option>
-            <option value="las">LAS</option>
-            <option value="tif">TIF</option>
-            <option value="netcdf">NetCDF</option>
-            <option value="cube">Cube</option>
-            <option value="shp">SHP</option>
-            <option value="json">JSON</option>
-            <option value="csv">CSV</option>
-        </select>
-        <div id="dynamicOptions" style="margin-left: 10px; display: inline-block;"></div>
+    <div id="cesiumContainer"></div>
+    <h1 class="container" style="margin-bottom: 0;">Upload Layer</h1>
+    <div>
+        <form id="selectContainer" class="container">
+            <select id="fileType" name="fileType">
+                <option value="default">파일 형식을 선택하세요</option>
+                <option value="tiles">3D Tiles</option>
+                <option value="las">LAS</option>
+                <option value="tif">TIF</option>
+                <option value="netcdf">NetCDF</option>
+                <option value="cube">Cube</option>
+                <option value="shp">SHP</option>
+                <option value="json">JSON</option>
+                <option value="csv">CSV</option>
+            </select>
+            <svg id="selectSvg" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 32 32">
+                <path d="M0 0h32v32H0z" fill="none" />
+                <path fill="currentColor"
+                    d="M8.037 11.166L14.5 22.36c.825 1.43 2.175 1.43 3 0l6.463-11.195c.826-1.43.15-2.598-1.5-2.598H9.537c-1.65 0-2.326 1.17-1.5 2.6z" />
+            </svg>
+        </form>
     </div>
-    <input type="file" id="input"></input>
-    <button id="load">로드</button>
-    <button id="jobBtn">확인</button>
-    <button id="deleteBtn">삭제</button>
+    <div id="inputContainer" class="container">
+        <input type="file" id="input"></input>
+        <button id="load" class="btn">로드</button>
+        <button id="jobBtn" class="btn">확인</button>
+        <button id="deleteBtn" class="btn">삭제</button>
+    </div>
     <pre id="output"></pre>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Cesium.js"></script>
     <script src="./docker/datacube-javascript-client-0.2.1/datacube-sdk.js"></script>
@@ -69,7 +149,7 @@
 
         const cesiumCanvas = document.querySelector('canvas')
         cesiumCanvas.style.width = '100%'
-        cesiumCanvas.style.height = '590px'
+        cesiumCanvas.style.height = '500px'
 
         // 로드 
         const load = document.getElementById('load');
@@ -82,8 +162,7 @@
 
         // json 선택시
         fileType.addEventListener('change', () => {
-            type = fileType.value
-            dynamicOptions.innerHTML = '';
+            type = fileType.value;
 
             if (type == 'json') {
                 const levels = [
@@ -221,7 +300,6 @@
         deleteBtn.addEventListener('click', async () => {
             await client.layers.delete('ss');
         })
-
 
 
     </script>
